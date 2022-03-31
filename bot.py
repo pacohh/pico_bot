@@ -4,6 +4,7 @@ import discord
 from discord import RawReactionActionEvent
 
 import background_tasks
+import commands
 import config
 
 COMMANDS = []
@@ -23,7 +24,7 @@ def main():
 
 def register_commands():
     """Register all available commands."""
-    pass
+    register_command(commands.WhoCommand)
 
 
 def register_command(command_class):
@@ -34,7 +35,7 @@ def register_command(command_class):
 
 def register_reaction_handlers():
     """Register all available reaction handlers."""
-    pass
+    register_reaction_handler(commands.WhoRefreshReactionHandler)
 
 
 def register_reaction_handler(handler_class):

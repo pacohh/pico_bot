@@ -8,18 +8,30 @@ LOG_LEVEL = env.get('LOG_LEVEL', 'INFO')
 # Discord
 DISCORD_TOKEN = env.require('DISCORD_TOKEN')
 DISCORD_SERVER_ID = int(env.require('DISCORD_SERVER_ID'))
-DISCORD_PLAYER_LOG_CHANNEL_ID = int(env.require('DISCORD_PLAYER_LOG_CHANNEL_ID'))
+DISCORD_SQUAD_CHANNEL_ID = int(env.require('DISCORD_SQUAD_CHANNEL_ID'))
 
 # BattleMetrics
 BM_TOKEN = env.require('BM_TOKEN')
-BM_PLAYER_IDS = [
-    281939989,  # abe,
-    184191499,  # Buck,
-    151189529,  # Davil,
-    549196030,  # Kasper,
-    1816255,  # Mulu,
-    131050066,  # Tarmo,
-]
+BM_PLAYERS = {
+    281939989: 'abe',
+    # 0: 'Boouya',
+    184191499: 'Buck',
+    151189529: 'Davil',
+    # 0: 'Drk',
+    # 0: 'Eddan',
+    # 0: 'Emmo',
+    72834906: 'Gunter',
+    267265760: 'Hunter',
+    # 0: 'in7sec',
+    107913625: 'Jks',
+    310278335: 'Jumping',
+    549196030: 'Kasper',
+    1816255: 'Mulu',
+    # 0: 'Petke',
+    482010215: 'Stink',
+    131050066: 'Tarmo',
+    # 0: 'YUmY',
+}
 BM_ALLOWED_GAMES = {
     'squad': 'Squad',
     'postscriptum': 'PS',

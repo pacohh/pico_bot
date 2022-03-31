@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 @cached(ttl=10)
 async def get_player_server(player_id: int, token: str) -> Optional[dict]:
-    logger.info('Get current server for player %s', player_id)
+    logger.debug('Get current server for player %s', player_id)
     endpoint = f'/players/{player_id}'
     params = {
         'include': 'server',
-        'fields[server]': 'name,country',
+        'fields[server]': 'name,country,players,maxPlayers,details',
     }
     try:
         res = await _send_request(endpoint, token=token, params=params)
@@ -48,13 +48,29 @@ async def get_player_server(player_id: int, token: str) -> Optional[dict]:
     if server and server['relationships']['game']['data']['id'] not in config.BM_ALLOWED_GAMES:
         server = None
 
+    data_attrs = data['data']['attributes']
+    server_attrs = server['attributes'] if server else None
+    server_details = server_attrs['details'] if server else None
     return {
-        'player_id': data['data']['attributes']['id'],
-        'player_name': data['data']['attributes']['name'],
-        'server_id': server['id'] if server else None,
-        'server_name': server['attributes']['name'] if server else None,
-        'server_country': server['attributes']['country'].lower() if server else None,
-        'server_game': server['relationships']['game']['data']['id'] if server else None,
+        'player': {
+            'id': data_attrs['id'],
+            'name': data_attrs['name'],
+        },
+        'server': {
+            'id': server['id'] if server else None,
+            'name': server['attributes']['name'] if server else None,
+            'country': server_attrs['country'].lower() if server else None,
+            'game': server['relationships']['game']['data']['id'] if server else None,
+            'players': server_attrs['players'] if server else None,
+            'max_players': server_attrs['maxPlayers'] if server else None,
+            'layer': server_details['map'] if server else None,
+            'play_time': server_details['squad_playTime'] // 60 if server else None,
+            'queue': (
+                server_details['squad_publicQueue'] + server_details['squad_reservedQueue']
+                if server
+                else None
+            ),
+        },
     }
 
 

@@ -1,52 +1,55 @@
-from collections import defaultdict
-
-import discord
+import logging
 
 import config
 from background_tasks.base import CrontabDiscordTask
 from utils import battlemetrics
 
+logger = logging.getLogger(__name__)
+
+players_data = {}
+servers_data = []
+
 
 class BattlemetricsPlayersTask(CrontabDiscordTask):
     """
-    Task that sends a message every time a player joins a server (according to BM).
+    Task that checks what players are online and on which servers.
     """
 
-    crontab = '* * * * * */30'
+    crontab = '* * * * * */20'
     run_on_start = True
 
     def __init__(self, client):
         super().__init__(client)
-        self.players = defaultdict(None)
 
     async def work(self):
-        channel = self.client.get_channel(config.DISCORD_PLAYER_LOG_CHANNEL_ID)
+        logger.info('Updating BM player and server data')
+        for player_id, player_name in config.BM_PLAYERS.items():
+            await self.handle_player(player_id, player_name)
+        self.update_server_data()
 
-        for player_id in config.BM_PLAYER_IDS:
-            await self.handle_player(player_id, channel)
+    @staticmethod
+    async def handle_player(player_id: int, player_name: str) -> None:
+        data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
+        players_data[player_name] = data
 
-    async def handle_player(self, player_id, channel):
-        new_data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
+    @staticmethod
+    def update_server_data() -> None:
+        servers = {}
+        for player_name, player_data in players_data.items():
+            server = player_data['server']
+            server_name = server['name']
 
-        if player_id not in self.players:
-            self.players[player_id] = new_data
-            return
+            if not server_name:
+                continue
 
-        old_data = self.players[player_id]
-        self.players[player_id] = new_data
+            if server_name not in servers:
+                servers[server_name] = server
+                servers[server_name]['pepegas'] = []
 
-        old_server_id = old_data['server_id']
-        new_server_id = new_data['server_id']
+            servers[server_name]['pepegas'].append(player_name)
 
-        has_connected = new_server_id and new_server_id != old_server_id
-        has_disconnected = old_server_id and not new_server_id
+        for server in servers.values():
+            server['pepegas'].sort()
 
-        player_name = new_data['player_name']
-        server_name = new_data['server_name']
-        game = config.BM_ALLOWED_GAMES.get(new_data['server_game'])
-        country = f':flag_{new_data["server_country"]}:'
-
-        if has_connected:
-            await channel.send(f'**{player_name}** joined **{server_name}** ({game} {country})')
-        elif has_disconnected:
-            await channel.send(f'**{player_name}** stopped playing')
+        global servers_data
+        servers_data = list(servers.values())
