@@ -19,9 +19,10 @@ class PresenceTask(CrontabDiscordTask):
         for pepega in bm_players.players_data.values():
             if pepega['server']['id']:
                 pepegas += 1
+        plural = 's' if pepegas != 1 else ''
         await self.client.change_presence(
             activity=discord.Activity(
-                name=f'{pepegas} pepegas',
-                type=discord.ActivityType.watching,
+                name=f'with {pepegas} pepega{plural}',
+                type=discord.ActivityType.playing,
             )
         )
