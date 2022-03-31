@@ -63,34 +63,15 @@ class BaseCommand:
         return member
 
     @error_handler
-    async def handle_message(self, message, response_channel=None):
-        """Handle the message.
-
-        If a response_channel is given the response will be sent there instead
-        of to the message's channel.
-        """
-        channel = self.get_response_channel(message, response_channel)
-        await self.pre_handle(message, channel)
-        response = await self.handle(message, channel)
-        await self.post_handle(message, channel, response)
+    async def handle_interaction(self, interaction: discord.Interaction, *args):
+        """Handle the interaction."""
+        response = await self.handle(interaction, *args)
         if self.response_ttl is not None and response:
             await self.delete_response(response)
         return response
 
-    def get_response_channel(self, message, response_channel):
-        channel = response_channel or message.channel
-        if not isinstance(channel, (discord.TextChannel, discord.DMChannel)):
-            channel = self.client.get_channel(channel)
-        return channel
-
-    async def pre_handle(self, message, response_channel):
-        pass
-
-    async def handle(self, message, response_channel):
+    async def handle(self, interaction, *args):
         raise NotImplementedError()
-
-    async def post_handle(self, message, response_channel, response):
-        pass
 
     async def delete_response(self, response):
         await sleep(self.response_ttl)

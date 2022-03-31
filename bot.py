@@ -1,52 +1,35 @@
 import logging
 
 import discord
-from discord import RawReactionActionEvent
+from discord import RawReactionActionEvent, app_commands
 
-import background_tasks
 import commands
 import config
-
-COMMANDS = []
-REACTION_HANDLERS = []
+from client import COMMANDS, REACTION_HANDLERS, Client
 
 logger = logging.getLogger(__name__)
-client = discord.Client()
+client = Client()
+tree = app_commands.CommandTree(client)
 
 
 def main():
     config.setup_logging()
-    register_commands()
-    register_reaction_handlers()
-    register_background_tasks()
     client.run(config.DISCORD_TOKEN)
 
 
-def register_commands():
-    """Register all available commands."""
-    register_command(commands.WhoCommand)
+# def register_commands():
+#     register_command(commands.WhoCommand)
+#
+#
+# def register_command(command_class):
+#     """Register a command class."""
+#     command = command_class(client)
+#     COMMANDS[command_class] = command
 
 
-def register_command(command_class):
-    """Register a command class."""
-    command = command_class(client)
-    COMMANDS.append(command)
-
-
-def register_reaction_handlers():
-    """Register all available reaction handlers."""
-    register_reaction_handler(commands.WhoRefreshReactionHandler)
-
-
-def register_reaction_handler(handler_class):
-    """Register a reaction handler class."""
-    command = handler_class(client)
-    REACTION_HANDLERS.append(command)
-
-
-def register_background_tasks():
-    """Register all background tasks."""
-    client.loop.create_task(background_tasks.BattlemetricsPlayersTask(client).start())
+@tree.command(guild=discord.Object(id=config.DISCORD_SERVER_ID))
+async def who(interaction: discord.Interaction):
+    await commands.WhoCommand(client).handle_interaction(interaction)
 
 
 @client.event
@@ -56,11 +39,12 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    for command in COMMANDS:
-        if await command.should_handle(message):
-            log_message(message)
-            await command.handle_message(message)
-            return
+    is_dm = isinstance(message.channel, discord.DMChannel)
+    is_sync = message.content.strip().lower() == 'sync'
+    is_tarmo = message.author.id == 71541808957493248
+    if is_dm and is_sync and is_tarmo:
+        await tree.sync(guild=discord.Object(id=config.DISCORD_SERVER_ID))
+        await message.channel.send('Sync complete')
 
 
 @client.event

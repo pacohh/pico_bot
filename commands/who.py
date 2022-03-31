@@ -1,7 +1,10 @@
 import logging
 
+import discord
+
 import config
 from background_tasks import bm_players
+from bot import tree
 from commands.base import BaseCommand, BaseReactionHandler
 from commands.mixins import DeletePreviousMixin
 from components import emojis
@@ -16,10 +19,10 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
     channels = {config.DISCORD_SQUAD_CHANNEL_ID}
     allow_pm = False
 
-    async def handle(self, message, response_channel):
+    async def handle(self, interaction: discord.Interaction, *args):
         message = WhoMessageBuilder.build()
         if message:
-            response = await response_channel.send(content=message)
+            response = await interaction.response.send_message(content=message)
             await response.add_reaction(REFRESH_EMOJI)
             return response
 
