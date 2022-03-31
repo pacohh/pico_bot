@@ -3,50 +3,20 @@ import logging
 import discord
 from discord import RawReactionActionEvent
 
-import background_tasks
-import commands
 import config
-
-COMMANDS = []
-REACTION_HANDLERS = []
+from client import COMMANDS, REACTION_HANDLERS, Client
 
 logger = logging.getLogger(__name__)
-client = discord.Client()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = Client(intents=intents)
 
 
 def main():
     config.setup_logging()
-    register_commands()
-    register_reaction_handlers()
-    register_background_tasks()
     client.run(config.DISCORD_TOKEN)
-
-
-def register_commands():
-    """Register all available commands."""
-    register_command(commands.WhoCommand)
-
-
-def register_command(command_class):
-    """Register a command class."""
-    command = command_class(client)
-    COMMANDS.append(command)
-
-
-def register_reaction_handlers():
-    """Register all available reaction handlers."""
-    register_reaction_handler(commands.WhoRefreshReactionHandler)
-
-
-def register_reaction_handler(handler_class):
-    """Register a reaction handler class."""
-    command = handler_class(client)
-    REACTION_HANDLERS.append(command)
-
-
-def register_background_tasks():
-    """Register all background tasks."""
-    client.loop.create_task(background_tasks.BattlemetricsPlayersTask(client).start())
 
 
 @client.event

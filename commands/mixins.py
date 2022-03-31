@@ -15,6 +15,8 @@ class DeletePreviousMixin:
     previous_responses = defaultdict(set)
 
     async def post_handle(self, message, response_channel, response):
+        if not response:
+            return
         async with Lock():
             channel_responses = self.previous_responses[message.channel]
             await self.delete_channel_responses(message.channel, channel_responses)
