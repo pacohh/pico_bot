@@ -4,9 +4,6 @@ import config
 from background_tasks import bm_players
 from commands.base import BaseCommand, BaseReactionHandler
 from commands.mixins import DeletePreviousMixin
-from components import emojis
-
-REFRESH_EMOJI = emojis.REFRESH
 
 logger = logging.getLogger(__name__)
 
@@ -16,35 +13,36 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
     channels = {config.DISCORD_SQUAD_CHANNEL_ID}
     allow_pm = False
 
+    previous_message = None
+
     async def handle(self, message, response_channel):
-        message = WhoMessageBuilder.build()
-        if message:
-            response = await response_channel.send(content=message)
-            await response.add_reaction(REFRESH_EMOJI)
-            return response
+        message = self.build_message()
+        self.previous_message = message
+        return await response_channel.send(content=message)
 
+    @classmethod
+    async def update_messages(cls):
+        message = cls.build_message()
 
-class WhoRefreshReactionHandler(BaseReactionHandler):
-    emoji = REFRESH_EMOJI
+        # Don't update if message hasn't changed
+        if message == cls.previous_message:
+            return
 
-    async def should_handle(self, reaction, user):
-        # Check that the message is for a !who command
-        if reaction.message not in WhoCommand.previous_responses[reaction.message.channel]:
-            return False
+        cls.previous_message = message
 
-        return await super().should_handle(reaction, user)
+        # Log number of messages being changed if there is any
+        responses_count = sum(map(len, cls.previous_responses.values()))
+        if responses_count:
+            logger.info('Updating %d !who messages', responses_count)
 
-    async def handle(self, reaction, user, response_channel):
-        # Log
-        channel = reaction.message.channel
-        logger.info('%s triggered !server refresh in #%s', user, channel.name or channel.id)
+        # Update messages
+        for responses in cls.previous_responses.values():
+            for response in responses:
+                await response.edit(message)
 
-        # Remove reaction
-        await reaction.message.remove_reaction(reaction.emoji, user)
-
-        # Update message
-        message = WhoMessageBuilder.build()
-        await reaction.message.edit(message)
+    @classmethod
+    def build_message(cls):
+        return WhoMessageBuilder.build() or 'No pepegas around'
 
 
 class WhoMessageBuilder:

@@ -1,1 +1,1 @@
-from .who import WhoCommand, WhoRefreshReactionHandler
+from .who import WhoCommand

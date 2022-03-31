@@ -25,7 +25,6 @@ class Client(discord.Client):
 
     def register_reaction_handlers(self):
         """Register all available reaction handlers."""
-        self.register_reaction_handler(commands.WhoRefreshReactionHandler)
 
     def register_reaction_handler(self, handler_class):
         """Register a reaction handler class."""

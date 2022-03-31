@@ -1,5 +1,6 @@
 import logging
 
+import commands
 import config
 from background_tasks.base import CrontabDiscordTask
 from utils import battlemetrics
@@ -26,6 +27,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
         for player_id, player_name in config.BM_PLAYERS.items():
             await self.handle_player(player_id, player_name)
         self.update_server_data()
+        await commands.WhoCommand.update_messages()
 
     @staticmethod
     async def handle_player(player_id: int, player_name: str) -> None:
