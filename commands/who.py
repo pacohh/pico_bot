@@ -52,8 +52,9 @@ class WhoMessageBuilder:
 
     @classmethod
     def _build_server(cls, server: dict) -> str:
+        emote = server['emote'] if server['emote'] else f":flag_{server['country']}:"
         return (
-            f":flag_{server['country']}:   **{server['name']}**\n"
+            f"{emote}   **{server['name']}**\n"
             f"```yaml\n"
             f"Pepegas: {', '.join(server['pepegas'])}\n"
             f"Layer:   {server['layer']}\n"

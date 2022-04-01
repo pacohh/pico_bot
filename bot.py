@@ -19,12 +19,6 @@ def main():
     client.run(config.DISCORD_TOKEN)
 
 
-async def change_presence(activity: discord.Activity) -> None:
-    if not client.is_ready():
-        return
-    await client.change_presence(activity=activity)
-
-
 @client.event
 async def on_ready():
     logger.info('Logged in as "%s" (%s)', client.user.name, client.user.id)

@@ -2,7 +2,6 @@ import logging
 
 import discord
 
-import bot
 import commands
 import config
 from background_tasks.base import CrontabDiscordTask
@@ -64,8 +63,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
     async def update_who_messages() -> None:
         await commands.WhoCommand.update_messages()
 
-    @staticmethod
-    async def update_bot_presence() -> None:
+    async def update_bot_presence(self) -> None:
         # Count how many pepegas are playing
         pepegas = 0
         for pepega in players_data.values():
@@ -74,7 +72,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
         # Update bot presence
         plural = 's' if pepegas != 1 else ''
-        await bot.change_presence(
+        await self.client.change_presence(
             activity=discord.Activity(
                 name=f'with {pepegas} pepega{plural}',
                 type=discord.ActivityType.playing,

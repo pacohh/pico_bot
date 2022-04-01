@@ -13,27 +13,30 @@ DISCORD_SQUAD_CHANNEL_ID = int(env.require('DISCORD_SQUAD_CHANNEL_ID'))
 # BattleMetrics
 BM_TOKEN = env.require('BM_TOKEN')
 BM_PLAYERS = {
-    281939989: 'abe',
-    # 0: 'Boouya',
-    184191499: 'Buck',
-    151189529: 'Davil',
-    495011661: 'Drk',
-    3554401: 'Eddan',
-    201740336: 'Emmo',
-    72834906: 'Gunter',
-    267265760: 'Hunter',
-    77509268: 'in7sec',
-    107913625: 'Jks',
-    310278335: 'Jumping',
-    549196030: 'Kasper',
-    1816255: 'Mulu',
-    538282779: 'Petke',
-    482010215: 'Stink',
-    131050066: 'Tarmo',
-    401543470: 'Yumy',
+    '281939989': 'abe',
+    '142055479': 'Boouya',
+    '184191499': 'Buck',
+    '151189529': 'Davil',
+    '495011661': 'Drk',
+    '3554401': 'Eddan',
+    '201740336': 'Emmo',
+    '72834906': 'Gunter',
+    '267265760': 'Hunter',
+    '77509268': 'in7sec',
+    '107913625': 'Jks',
+    '310278335': 'Jumping',
+    '549196030': 'Kasper',
+    '1816255': 'Mulu',
+    '538282779': 'Petke',
+    '482010215': 'Stink',
+    '131050066': 'Tarmo',
+    '401543470': 'Yumy',
 }
 BM_ALLOWED_GAMES = {
     'squad': 'Squad',
+}
+BM_SERVER_EMOTES = {
+    '2272069': '<:bb:959392964243771413>',  # Blood Bound
 }
 
 

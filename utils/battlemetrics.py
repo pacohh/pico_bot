@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 @cached(ttl=10)
-async def get_player_server(player_id: int, token: str) -> Optional[dict]:
+async def get_player_server(player_id: str, token: str) -> Optional[dict]:
     logger.debug('Get current server for player %s', player_id)
     endpoint = f'/players/{player_id}'
     params = {
@@ -60,6 +60,7 @@ async def get_player_server(player_id: int, token: str) -> Optional[dict]:
             'id': server['id'] if server else None,
             'name': server['attributes']['name'] if server else None,
             'country': server_attrs['country'].lower() if server else None,
+            'emote': config.BM_SERVER_EMOTES.get(server['id']) if server else None,
             'game': server['relationships']['game']['data']['id'] if server else None,
             'players': server_attrs['players'] if server else None,
             'max_players': server_attrs['maxPlayers'] if server else None,
