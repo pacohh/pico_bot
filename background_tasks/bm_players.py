@@ -1,5 +1,8 @@
 import logging
 
+import discord
+
+import bot
 import commands
 import config
 from background_tasks.base import CrontabDiscordTask
@@ -24,15 +27,16 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
     async def work(self):
         logger.info('Updating BM player and server data')
-        for player_id, player_name in config.BM_PLAYERS.items():
-            await self.handle_player(player_id, player_name)
+        await self.update_players_data()
         self.update_server_data()
-        await commands.WhoCommand.update_messages()
+        await self.update_who_messages()
+        await self.update_bot_presence()
 
     @staticmethod
-    async def handle_player(player_id: int, player_name: str) -> None:
-        data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
-        players_data[player_name] = data
+    async def update_players_data() -> None:
+        for player_id, player_name in config.BM_PLAYERS.items():
+            data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
+            players_data[player_name] = data
 
     @staticmethod
     def update_server_data() -> None:
@@ -55,3 +59,24 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
         global servers_data
         servers_data = list(servers.values())
+
+    @staticmethod
+    async def update_who_messages() -> None:
+        await commands.WhoCommand.update_messages()
+
+    @staticmethod
+    async def update_bot_presence() -> None:
+        # Count how many pepegas are playing
+        pepegas = 0
+        for pepega in players_data.values():
+            if pepega['server']['id']:
+                pepegas += 1
+
+        # Update bot presence
+        plural = 's' if pepegas != 1 else ''
+        await bot.change_presence(
+            activity=discord.Activity(
+                name=f'with {pepegas} pepega{plural}',
+                type=discord.ActivityType.playing,
+            )
+        )

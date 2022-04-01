@@ -34,7 +34,6 @@ BM_PLAYERS = {
 }
 BM_ALLOWED_GAMES = {
     'squad': 'Squad',
-    'postscriptum': 'PS',
 }
 
 

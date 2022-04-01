@@ -34,4 +34,3 @@ class Client(discord.Client):
     def register_background_tasks(self):
         """Register all background tasks."""
         self.loop.create_task(background_tasks.BattlemetricsPlayersTask(self).start())
-        self.loop.create_task(background_tasks.PresenceTask(self).start())
