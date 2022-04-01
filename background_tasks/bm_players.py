@@ -58,6 +58,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
         global servers_data
         servers_data = list(servers.values())
+        servers_data.sort(key=lambda server_: len(server_['pepegas']), reverse=True)
 
     @staticmethod
     async def update_who_messages() -> None:
