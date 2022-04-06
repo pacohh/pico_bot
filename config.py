@@ -8,6 +8,8 @@ LOG_LEVEL = env.get('LOG_LEVEL', 'INFO')
 # Discord
 DISCORD_TOKEN = env.require('DISCORD_TOKEN')
 DISCORD_SERVER_ID = int(env.require('DISCORD_SERVER_ID'))
+
+DISCORD_ADMIN_CHANNEL_ID = int(env.require('DISCORD_ADMIN_CHANNEL_ID'))
 DISCORD_SQUAD_CHANNEL_ID = int(env.require('DISCORD_SQUAD_CHANNEL_ID'))
 
 # BattleMetrics
