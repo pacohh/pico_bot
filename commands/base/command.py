@@ -38,7 +38,7 @@ class BaseCommand:
             return False
 
         # Check that it's the right command
-        if not message.content.startswith(self.command):
+        if not message.content.lower().startswith(self.command.lower()):
             return False
 
         # Check the channel or PM allowed
