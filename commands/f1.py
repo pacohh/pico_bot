@@ -10,6 +10,7 @@ from dateutil.tz import tzutc
 
 import config
 from commands.base import BaseCommand
+from components.progress_bar import ProgressBarMessage
 
 SESSION_NAMES = {
     'fp1': 'FP1',
@@ -19,17 +20,22 @@ SESSION_NAMES = {
     'gp': 'Race',
     'sprint': 'Sprint',
 }
+IGNORED_SESSIONS = {'fp1', 'fp2', 'fp3'}
 
 
 class F1CreateEventsCommand(BaseCommand):
     command = '!f1ce'
     channels = {config.DISCORD_ADMIN_CHANNEL_ID}
 
-    async def handle(self, message, response_channel):
+    async def handle(
+        self, message: discord.Message, response_channel: discord.TextChannel
+    ) -> discord.Message:
         arguments = message.content.split()[1:]
         if len(arguments) != 2:
             return await response_channel.send(
-                content=f'Wrong arguments. `{self.command} voice_channel_id data_url`'
+                f'Wrong arguments. `{self.command} <voice_channel_id> <data_url>`\n'
+                'Data from https://github.com/sportstimes/f1/tree/main/_db/f1',
+                suppress_embeds=True,
             )
 
         voice_channel_id = int(arguments[0])
@@ -47,9 +53,25 @@ class F1CreateEventsCommand(BaseCommand):
         except:
             return await response_channel.send(content=f'Error loading data from `{data_url}`')
 
+        # Create progress bar
+        num_races = len(data['races'])
+        progress_bar = ProgressBarMessage(
+            self.client,
+            response_channel,
+            f'Creating events for {num_races} races\n'
+            '`[{progress_bar}] {percentage:3.0f}%` {comment}',
+        )
+        await progress_bar.send(comment=f'0/{num_races}')
+
         # Create events for each race
+        count = 0
         for race in data['races']:
             await self.handle_race(guild, voice_channel, race)
+            count += 1
+            await progress_bar.update(count, num_races, comment=f'{count}/{num_races}')
+
+        # Delete progress bar
+        await progress_bar.delete()
 
         return await response_channel.send(content='Finished')
 
@@ -59,6 +81,8 @@ class F1CreateEventsCommand(BaseCommand):
         race_name = race['name'].replace('Grand Prix', '').strip()
         race_name = f'{race_name} GP'
         for session, timestamp in race['sessions'].items():
+            if session in IGNORED_SESSIONS:
+                continue
             session_name = f'{race_name} {SESSION_NAMES[session]}'
             await self.handle_session(guild, voice_channel, session_name, timestamp)
 
