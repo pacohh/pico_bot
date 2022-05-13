@@ -35,6 +35,7 @@ async def get_player_server(player_id: str, token: str) -> Optional[dict]:
     try:
         res = await _send_request(endpoint, token=token, params=params)
     except ClientResponseError:
+        logger.exception('Error getting current server for player %s', player_id)
         return None
     data = await res.json()
 

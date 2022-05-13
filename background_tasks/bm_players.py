@@ -41,6 +41,9 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
     def update_server_data() -> None:
         servers = {}
         for player_name, player_data in players_data.items():
+            if not player_data:
+                continue
+
             server = player_data['server']
             server_name = server['name']
 
