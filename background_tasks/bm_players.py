@@ -71,6 +71,8 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
         # Count how many pepegas are playing
         pepegas = 0
         for pepega in players_data.values():
+            if not pepega:
+                continue
             if pepega['server']['id']:
                 pepegas += 1
 
