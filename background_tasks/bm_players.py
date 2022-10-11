@@ -57,7 +57,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
             servers[server_name]['pepegas'].append(player_name)
 
         for server in servers.values():
-            server['pepegas'].sort()
+            server['pepegas'].sort(key=lambda name: name.lower())
 
         global servers_data
         servers_data = list(servers.values())
