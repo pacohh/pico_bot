@@ -2,8 +2,9 @@ import logging
 
 import config
 from background_tasks import bm_players
-from commands.base import BaseCommand, BaseReactionHandler
+from commands.base import BaseCommand
 from commands.mixins import DeletePreviousMixin
+from utils.squad import prettify_layer_name
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class WhoMessageBuilder:
             f"{emote}   **{server['name']}**\n"
             f"```yaml\n"
             f"Pepegas: {', '.join(server['pepegas'])}\n"
-            f"Layer:   {server['layer']}\n"
+            f"Layer:   {prettify_layer_name(server['layer'])}\n"
             f"Players: {server['players']}/{server['max_players']} (+{server['queue']})\n"
             f"```"
         )
