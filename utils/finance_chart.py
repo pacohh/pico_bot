@@ -31,6 +31,9 @@ async def chart(ticker, period):
 
     data = ticker.history(period, interval)
 
+    if data.empty:
+        return None
+
     fig = go.Figure(
         data=[
             go.Candlestick(
