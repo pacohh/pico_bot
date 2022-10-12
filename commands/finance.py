@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 PERIOD_MAPPING = {
     '1d': '1d',
     '5d': '5d',
+    '1w': '5d',
     '1m': '1mo',
     '3m': '3mo',
     '6m': '6mo',
