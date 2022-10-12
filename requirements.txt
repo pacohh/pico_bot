@@ -7,3 +7,7 @@ git+https://github.com/Rapptz/discord.py@a0618ef
 python-dateutil==2.8.2
 pytz==2021.3
 emoji==1.7.0
+
+yfinance==0.1.77
+plotly==5.10.0
+kaleido==0.2.1
