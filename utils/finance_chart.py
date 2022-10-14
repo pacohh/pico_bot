@@ -19,52 +19,107 @@ PERIOD_INTERVALS = {
 }
 
 
-async def chart(ticker, period):
-    interval = PERIOD_INTERVALS.get(period, '1h')
-    is_hourly = interval[-1] in ['h', 'm']
+class BaseFinanceChart:
+    def __init__(self, ticker, period):
+        self.ticker = Ticker(ticker)
+        self.period = period
+        self.interval = PERIOD_INTERVALS.get(period, '1h')
+        self.is_hourly = self.interval[-1] in ['h', 'm']
+        self.ticker_data = self.ticker.history(period, self.interval)
+        self.ticker_info = self.ticker.info
 
-    ticker = Ticker(ticker)
-    info = ticker.info
+    @property
+    def has_data(self):
+        has_symbol = 'symbol' not in self.ticker_info
+        has_data = not self.ticker_data.empty
+        return has_symbol and has_data
 
-    if 'symbol' not in info:
-        return None
+    async def to_image(self):
+        if not self.has_data:
+            return None
+        chart = await self.chart()
+        image_bytes = chart.to_image(format='png', scale=2)
+        image = BytesIO(image_bytes)
+        return image
 
-    data = ticker.history(period, interval)
+    async def chart(self):
+        raise NotImplementedError()
 
-    if data.empty:
-        return None
 
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=data.index,
-                open=data['Open'],
-                high=data['High'],
-                low=data['Low'],
-                close=data['Close'],
-            )
-        ],
-        layout=go.Layout(
-            title=go.layout.Title(
-                text=f"{info.get('longName', info.get('name'))} ({info['symbol']})<br>"
-                f"<sup>Period: {period.upper()} | Interval: {interval.upper()}</sup>",
-                font=go.layout.title.Font(
-                    family='Arial',
-                    size=14,
-                ),
-            ),
-            width=800,
-            height=500,
-            margin=Margin(b=10, l=10, r=10, t=50),
-            template='plotly_dark',
-            xaxis_rangebreaks=[
-                {'bounds': ["sat", "mon"]},
-                {'bounds': [16, 9.5], 'pattern': "hour"} if is_hourly else {},
+class FinanceLineChart(BaseFinanceChart):
+    async def chart(self):
+        info = self.ticker_info
+        data = self.ticker_data
+
+        fig = go.Figure(
+            data=[
+                go.Scatter(
+                    x=data.index,
+                    y=data['High'],
+                )
             ],
-            xaxis_rangeslider_visible=False,
-        ),
-    )
+            layout=go.Layout(
+                title=go.layout.Title(
+                    text=f"{info.get('longName', info.get('name'))} ({info['symbol']})<br>"
+                    f"<sup>Period: {self.period.upper()} | Interval: {self.interval.upper()}</sup>",
+                    font=go.layout.title.Font(
+                        family='Arial',
+                        size=14,
+                    ),
+                ),
+                width=800,
+                height=500,
+                margin=Margin(b=10, l=10, r=10, t=50),
+                template='plotly_dark',
+                xaxis_rangebreaks=[
+                    {'bounds': ["sat", "mon"]},
+                    {'bounds': [16, 9.5], 'pattern': "hour"} if self.is_hourly else {},
+                ],
+                xaxis_rangeslider_visible=False,
+            ),
+        )
 
-    image_bytes = fig.to_image(format='png', scale=2)
-    image = BytesIO(image_bytes)
-    return image
+        image_bytes = fig.to_image(format='png', scale=2)
+        image = BytesIO(image_bytes)
+        return image
+
+
+class FinanceCandleChart(BaseFinanceChart):
+    async def chart(self):
+        info = self.ticker_info
+        data = self.ticker_data
+
+        fig = go.Figure(
+            data=[
+                go.Candlestick(
+                    x=data.index,
+                    open=data['Open'],
+                    high=data['High'],
+                    low=data['Low'],
+                    close=data['Close'],
+                )
+            ],
+            layout=go.Layout(
+                title=go.layout.Title(
+                    text=f"{info.get('longName', info.get('name'))} ({info['symbol']})<br>"
+                    f"<sup>Period: {self.period.upper()} | Interval: {self.interval.upper()}</sup>",
+                    font=go.layout.title.Font(
+                        family='Arial',
+                        size=14,
+                    ),
+                ),
+                width=800,
+                height=500,
+                margin=Margin(b=10, l=10, r=10, t=50),
+                template='plotly_dark',
+                xaxis_rangebreaks=[
+                    {'bounds': ["sat", "mon"]},
+                    {'bounds': [16, 9.5], 'pattern': "hour"} if self.is_hourly else {},
+                ],
+                xaxis_rangeslider_visible=False,
+            ),
+        )
+
+        image_bytes = fig.to_image(format='png', scale=2)
+        image = BytesIO(image_bytes)
+        return image

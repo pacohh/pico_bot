@@ -24,14 +24,18 @@ PERIOD_MAPPING = {
 }
 
 
-class ChartCommand(BaseCommand):
-    command = '!c'
+class BaseFinanceChartCommand(BaseCommand):
     channels = {config.DISCORD_FINANCE_CHANNEL_ID}
     allow_pm = False
+    chart_class = None
+
+    def is_correct_command(self, message):
+        command = message.content.lower().split()[0]
+        return command == self.command
 
     async def handle(self, message, response_channel):
         arguments = message.content.split()[1:]
-        if len(arguments) != 2:
+        if not arguments or len(arguments) > 2:
             return await response_channel.send(
                 f'Wrong arguments. `{self.command} <ticker> <period>`\n'
                 f'Valid periods: {", ".join(PERIOD_MAPPING)}',
@@ -39,7 +43,10 @@ class ChartCommand(BaseCommand):
             )
 
         ticker = arguments[0].upper()
-        period = arguments[1].lower()
+        if len(arguments) == 2:
+            period = arguments[1].lower()
+        else:
+            period = '1d'
 
         if period not in PERIOD_MAPPING:
             return await response_channel.send(
@@ -50,9 +57,20 @@ class ChartCommand(BaseCommand):
         await response_channel.trigger_typing()
 
         period = PERIOD_MAPPING[period]
-        chart = await self.client.loop.create_task(finance_chart.chart(ticker, period))
+        chart = self.chart_class(ticker, period)
+        chart_image = await self.client.loop.create_task(chart.chart())
 
-        if not chart:
+        if not chart_image:
             return await response_channel.send(f'No data found for ticker {ticker}')
 
-        return await response_channel.send(file=discord.File(fp=chart, filename='chart.png'))
+        return await response_channel.send(file=discord.File(fp=chart_image, filename='chart.png'))
+
+
+class FinanceLineChartCommand(BaseFinanceChartCommand):
+    command = 'c'
+    chart_class = finance_chart.FinanceLineChart
+
+
+class FinanceCandleChartCommand(BaseFinanceChartCommand):
+    command = 'cc'
+    chart_class = finance_chart.FinanceCandleChart

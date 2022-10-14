@@ -38,7 +38,7 @@ class BaseCommand:
             return False
 
         # Check that it's the right command
-        if not message.content.lower().startswith(self.command.lower()):
+        if not self.is_correct_command(message):
             return False
 
         # Check the channel or PM allowed
@@ -54,6 +54,9 @@ class BaseCommand:
             return False
 
         return True
+
+    def is_correct_command(self, message):
+        return message.content.lower().startswith(self.command.lower())
 
     def get_message_member(self, message):
         member = message.author
