@@ -26,6 +26,7 @@ class BaseCommand:
     channels = None
     roles = None
     response_ttl = None
+    ignored_users = []
 
     def __init__(self, client):
         self.client = client
@@ -35,6 +36,10 @@ class BaseCommand:
 
         # Don't handle messages from bots
         if message.author.bot:
+            return False
+
+        # Don't handle messages from ignored users
+        if message.author.id in self.ignored_users:
             return False
 
         # Check that it's the right command

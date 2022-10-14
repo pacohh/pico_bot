@@ -28,6 +28,7 @@ class BaseFinanceChartCommand(BaseCommand):
     channels = {config.DISCORD_FINANCE_CHANNEL_ID}
     allow_pm = False
     chart_class = None
+    ignored_users = [config.DISCORD_EMMO2GEE_USER_ID]
 
     def is_correct_command(self, message):
         command = message.content.lower().split()[0]
