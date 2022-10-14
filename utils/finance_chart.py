@@ -78,6 +78,7 @@ class FinanceLineChart(BaseFinanceChart):
                 xaxis_rangeslider_visible=False,
             ),
         )
+        fig.update_traces(connectgaps=True)
 
         image_bytes = fig.to_image(format='png', scale=2)
         image = BytesIO(image_bytes)
