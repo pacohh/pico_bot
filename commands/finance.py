@@ -58,7 +58,7 @@ class BaseFinanceChartCommand(BaseCommand):
 
         period = PERIOD_MAPPING[period]
         chart = self.chart_class(ticker, period)
-        chart_image = await self.client.loop.create_task(chart.chart())
+        chart_image = await self.client.loop.create_task(chart.to_image())
 
         if not chart_image:
             return await response_channel.send(f'No data found for ticker {ticker}')

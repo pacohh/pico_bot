@@ -30,7 +30,7 @@ class BaseFinanceChart:
 
     @property
     def has_data(self):
-        has_symbol = 'symbol' not in self.ticker_info
+        has_symbol = 'symbol' in self.ticker_info
         has_data = not self.ticker_data.empty
         return has_symbol and has_data
 
@@ -80,9 +80,7 @@ class FinanceLineChart(BaseFinanceChart):
         )
         fig.update_traces(connectgaps=True)
 
-        image_bytes = fig.to_image(format='png', scale=2)
-        image = BytesIO(image_bytes)
-        return image
+        return fig
 
 
 class FinanceCandleChart(BaseFinanceChart):
@@ -121,6 +119,4 @@ class FinanceCandleChart(BaseFinanceChart):
             ),
         )
 
-        image_bytes = fig.to_image(format='png', scale=2)
-        image = BytesIO(image_bytes)
-        return image
+        return fig
