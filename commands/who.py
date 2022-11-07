@@ -1,4 +1,5 @@
 import logging
+from unittest.mock import MagicMock
 
 import config
 from background_tasks import bm_players
@@ -17,9 +18,9 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
     previous_message = None
 
     async def handle(self, message, response_channel):
-        message = self.build_message()
-        self.previous_message = message
-        return await response_channel.send(content=message)
+        response_message = self.build_message()
+        self.previous_message = response_message
+        return await response_channel.send(content=response_message)
 
     @classmethod
     async def update_messages(cls):
@@ -40,6 +41,13 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         for responses in cls.previous_responses.values():
             for response in responses:
                 await response.edit(message)
+
+    async def send_degen_message(self):
+        channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
+        mock_message = MagicMock()
+        mock_message.channel = channel
+        await channel.send('Degen detected <:DinkDonk:1039181605236916314>')
+        await self.handle_message(mock_message)
 
     @classmethod
     def build_message(cls):

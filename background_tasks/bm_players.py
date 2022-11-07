@@ -27,7 +27,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
     async def work(self):
         logger.info('Updating BM player and server data')
         await self.update_players_data()
-        self.update_server_data()
+        await self.update_server_data()
         await self.update_who_messages()
         await self.update_bot_presence()
 
@@ -37,8 +37,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
             data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
             players_data[player_name] = data
 
-    @staticmethod
-    def update_server_data() -> None:
+    async def update_server_data(self) -> None:
         servers = {}
         for player_name, player_data in players_data.items():
             if not player_data:
@@ -60,8 +59,12 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
             server['pepegas'].sort(key=lambda name: name.lower())
 
         global servers_data
+        was_empty = not servers_data
         servers_data = list(servers.values())
         servers_data.sort(key=lambda server_: len(server_['pepegas']), reverse=True)
+        is_empty = not servers_data
+        if was_empty and not is_empty:
+            await commands.WhoCommand(self.client).send_degen_message()
 
     @staticmethod
     async def update_who_messages() -> None:
