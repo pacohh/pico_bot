@@ -46,7 +46,7 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
         mock_message = MagicMock()
         mock_message.channel = channel
-        await channel.send('Degen detected <:DinkDonk:1039181605236916314>')
+        await channel.send('Degen detected <a:DinkDonk:1002965061805015100>')
         await self.handle_message(mock_message)
 
     @classmethod
