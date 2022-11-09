@@ -16,6 +16,7 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
     allow_pm = False
 
     previous_message = None
+    degen_messages = set()
 
     async def handle(self, message, response_channel):
         response_message = self.build_message()
@@ -46,8 +47,15 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
         mock_message = MagicMock()
         mock_message.channel = channel
-        await channel.send('Degen detected <a:DinkDonk:1002965061805015100>')
+        message = await channel.send('<a:DinkDonk:1002965061805015100>')
+        self.degen_messages.add(message)
+        await self.add_response(message)
         await self.handle_message(mock_message)
+
+    async def delete_degen_messages(self):
+        channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
+        await self.delete_channel_responses(channel, self.degen_messages)
+        self.degen_messages.clear()
 
     @classmethod
     def build_message(cls):
