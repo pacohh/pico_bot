@@ -23,6 +23,10 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         self.previous_message = response_message
         return await response_channel.send(content=response_message)
 
+    async def post_handle(self, message, response_channel, response):
+        await self.delete_degen_messages()
+        return await super().post_handle(message, response_channel, response)
+
     @classmethod
     async def update_messages(cls):
         message = cls.build_message()
@@ -44,22 +48,24 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
                 await response.edit(message)
 
     async def send_degen_message(self):
-        channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
+        channel = self.squad_channel
         mock_message = MagicMock()
         mock_message.channel = channel
         message = await channel.send('<a:DinkDonk:1002965061805015100>')
         await self.handle_message(mock_message)
-        await self.add_response(message)
         self.degen_messages.add(message)
 
     async def delete_degen_messages(self):
-        channel = self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
-        await self.delete_channel_responses(channel, self.degen_messages)
+        await self.delete_channel_responses(self.squad_channel, self.degen_messages)
         self.degen_messages.clear()
 
     @classmethod
     def build_message(cls):
         return WhoMessageBuilder.build() or 'No pepegas around'
+
+    @property
+    def squad_channel(self):
+        return self.client.get_channel(config.DISCORD_SQUAD_CHANNEL_ID)
 
 
 class WhoMessageBuilder:
