@@ -20,6 +20,7 @@ class Client(discord.Client):
         self.register_command(commands.FinanceCandleChartCommand)
         self.register_command(commands.FinanceLineChartCommand)
         self.register_command(commands.F1CreateEventsCommand)
+        self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
 
     def register_command(self, command_class):
