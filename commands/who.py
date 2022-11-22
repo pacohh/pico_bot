@@ -45,7 +45,7 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         # Update messages
         for responses in cls.previous_responses.values():
             for response in responses:
-                await response.edit(message)
+                await response.edit(content=message)
 
     async def send_degen_message(self):
         channel = self.squad_channel
