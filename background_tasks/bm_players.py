@@ -63,10 +63,11 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
         servers_data = list(servers.values())
         servers_data.sort(key=lambda server_: len(server_['pepegas']), reverse=True)
         is_empty = not servers_data
-        if was_empty and not is_empty:
-            await commands.WhoCommand(self.client).send_degen_message()
-        if is_empty and not was_empty:
-            await commands.WhoCommand(self.client).delete_degen_messages()
+        # This is commented out to disable the degen messages
+        # if was_empty and not is_empty:
+        #     await commands.WhoCommand(self.client).send_degen_message()
+        # if is_empty and not was_empty:
+        #     await commands.WhoCommand(self.client).delete_degen_messages()
 
     @staticmethod
     async def update_who_messages() -> None:
