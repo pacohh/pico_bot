@@ -25,7 +25,6 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
         super().__init__(client)
 
     async def work(self):
-        logger.info('Updating BM player and server data')
         await self.update_players_data()
         await self.update_server_data()
         await self.update_who_messages()

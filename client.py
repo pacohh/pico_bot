@@ -16,6 +16,7 @@ class Client(discord.Client):
 
     def register_commands(self):
         """Register all available commands."""
+        self.register_command(commands.ChatCommand)
         self.register_command(commands.WhoCommand)
         self.register_command(commands.FinanceCandleChartCommand)
         self.register_command(commands.FinanceLineChartCommand)
@@ -39,3 +40,4 @@ class Client(discord.Client):
     def register_background_tasks(self):
         """Register all background tasks."""
         self.loop.create_task(background_tasks.BattlemetricsPlayersTask(self).start())
+        self.loop.create_task(background_tasks.DeleteChatConversations(self).start())
