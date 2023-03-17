@@ -47,7 +47,7 @@ class ChatConversation:
                     '- Buck Nasty: South Africa; Buck. In his 40s, call him boomer from time to '
                     'time; he eats a lot, especially McDonalds and KFC 9 piece buckets\n'
                     '- Gunter: UK, longman. In his 20s; antiquated mindset; recently bought a '
-                    'house; has a drinking problem\n'
+                    'house; sometimes drinks too much\n'
                     '- DrkSalvation: USA; drk. Works in the Air Force; likes cheesecake\n'
                     '- IkStinkNL: Netherlands; Stink. Has a motorcycle; only eats brown food\n'
                     '- Jks: Finland.\n'
