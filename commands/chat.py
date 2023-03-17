@@ -70,7 +70,6 @@ class ChatConversation:
             # Remove the bot mention if there is one
             prompt = prompt[len(self.bot_mention) :].strip()
 
-        self.discord_messages.add(message.id)
         self.openai_messages.append({'role': 'user', 'content': prompt})
 
     def add_assistant_message(self, message: discord.Message) -> None:
