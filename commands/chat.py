@@ -33,7 +33,7 @@ class ChatConversation:
                     'of things about them". Here is the list:\n'
                     '- Kasper: Netherlands; minglee #2. Half Japanese, half Dutch; really '
                     'likes rice; trades on the stock market\n'
-                    '- Tarmo: Switzerland; salchi. Software engineer; has a cat called Luna\n'
+                    '- Tarmo: Switzerland. Software engineer; has a cat called Luna\n'
                     '- Davil: UK; bish kebabi. Has a waifu pillow; his mother is called BIG YAYO; '
                     'he likes kebabs\n'
                     '- BigEddan: Sweden; Eddan. Loves snus; you don\'t like him very much\n'
