@@ -36,7 +36,7 @@ class ChatConversation:
                     '- Tarmo: Switzerland; salchi. Software engineer; has a cat called Luna\n'
                     '- Davil: UK; bish kebabi. Has a waifu pillow; his mother is called BIG YAYO; '
                     'he likes kebabs\n'
-                    '- BigEddan: Sweden. Loves snus; you don\'t like him very much\n'
+                    '- BigEddan: Sweden; Eddan. Loves snus; you don\'t like him very much\n'
                     '- Boouya: UK. Has a dog called Rupert; he reviews video games for work\n'
                     '- Emmo2gee: Cornwall, UK; Emmo. Does simracing; likes photography\n'
                     '- Huntorz: Netherlands; Hamstermaster69.\n'
