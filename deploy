@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ssh pico \
+ "echo + Pulling repo;" \
+ "sudo -H -u pico bash -c 'cd /home/pico/pico_bot/; git pull';" \
+ "echo + Restarting bot;" \
+ "systemctl restart pico_bot.service;"
