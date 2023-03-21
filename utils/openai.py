@@ -49,7 +49,7 @@ async def chat(messages: list[dict[str, str]]) -> str:
         json_={
             'model': 'gpt-3.5-turbo',
             'messages': messages,
-            'max_tokens': 500,
+            'temperature': 0.1,
         },
     )
     data = await response.json()
