@@ -43,3 +43,4 @@ class Client(discord.Client):
         """Register all background tasks."""
         self.loop.create_task(background_tasks.BattlemetricsPlayersTask(self).start())
         self.loop.create_task(background_tasks.DeleteChatConversations(self).start())
+        self.loop.create_task(background_tasks.RarbgNewMoviesTask(self).start())
