@@ -3,13 +3,46 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from copy import deepcopy
 from typing import Union
 
 import discord
 
 from commands.base import BaseCommand
+from utils import emojis
 from utils.openai import ModerationFlaggedError
 from utils.openai import chat as openai_chat
+
+WEIRD_MESSAGES = [
+    {
+        'role': 'system',
+        'content': (
+            "You are a sentiment analysis bot. "
+            "Given a user message you will analyze it and you'll decide how weird "
+            "it is on a scale from 0 to 10, 10 being the most weird. "
+            "You will only answer with a number between 0 and 10."
+        ),
+    },
+    # Example
+    {
+        'role': 'user',
+        'content': "@abe they've changed the layout of spotify again :PU_PepeCringeZoom:",
+    },
+    {'role': 'assistant', 'content': "4"},
+    # Example
+    {'role': 'user', 'content': "it kinda does and doesn't idk"},
+    {'role': 'assistant', 'content': "1"},
+    # Example
+    {'role': 'user', 'content': "is the weather good enough for a stroll?"},
+    {'role': 'assistant', 'content': "0"},
+    # Example
+    {'role': 'user', 'content': "hotties :wankege:"},
+    {'role': 'assistant', 'content': "8"},
+    # Example
+    {'role': 'user', 'content': "jizz in a pot?"},
+    {'role': 'assistant', 'content': "10"},
+]
+
 
 logger = logging.getLogger(__name__)
 
@@ -126,3 +159,33 @@ class ChatCommand(BaseCommand):
         for conversation in self.conversations:
             if conversation.has_message(message_id):
                 return conversation
+
+
+class WeirdReaction(BaseCommand):
+    command = ''
+
+    async def handle(self, message: discord.Message, response_channel: discord.TextChannel) -> None:
+        msg = message.clean_content.strip()
+        if len(msg) > 200:
+            return
+
+        is_weird = await self.is_weird(msg)
+        if is_weird:
+            await message.add_reaction(emojis.COUCH_STARE)
+
+    @staticmethod
+    async def is_weird(message: str) -> bool:
+        messages = deepcopy(WEIRD_MESSAGES)
+        messages.append({'role': 'user', 'content': message})
+
+        try:
+            response = await openai_chat(messages)
+        except ModerationFlaggedError:
+            return True
+
+        try:
+            score = int(response.strip())
+            logger.info('Weirdness score %d for message: %s', score, message)
+            return score > 5
+        except:
+            return False

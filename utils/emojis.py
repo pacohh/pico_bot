@@ -1,0 +1,1 @@
+COUCH_STARE = '<:couchStare:937068096294912040>'
