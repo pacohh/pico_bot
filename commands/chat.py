@@ -163,6 +163,18 @@ class ChatCommand(BaseCommand):
 
 class WeirdReaction(BaseCommand):
     command = ''
+    ignored_prefixes = {'<:', 'http:', 'https://'}
+
+    async def should_handle(self, message):
+        if not await super().should_handle(message):
+            return False
+
+        msg = message.content.lower()
+        for prefix in self.ignored_prefixes:
+            if msg.startswith(prefix):
+                return False
+
+        return True
 
     async def handle(self, message: discord.Message, response_channel: discord.TextChannel) -> None:
         msg = message.clean_content.strip()
