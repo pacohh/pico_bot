@@ -181,12 +181,12 @@ class WeirdReaction(BaseCommand):
         if len(msg) > 200:
             return
 
-        is_weird = await self.is_weird(msg)
+        is_weird = await self.is_weird(msg, message.author.name)
         if is_weird:
             await message.add_reaction(emojis.COUCH_STARE)
 
     @staticmethod
-    async def is_weird(message: str) -> bool:
+    async def is_weird(message: str, user: str) -> bool:
         messages = deepcopy(WEIRD_MESSAGES)
         messages.append({'role': 'user', 'content': message})
 
@@ -197,7 +197,8 @@ class WeirdReaction(BaseCommand):
 
         try:
             score = int(response.strip())
-            logger.info('Weirdness score %d for message: %s', score, message)
-            return score > 5
+            is_weird = score >= 7
+            logger.info('Weirdness score %d, weird = %s | %s: %s', score, is_weird, user, message)
+            return is_weird
         except:
             return False
