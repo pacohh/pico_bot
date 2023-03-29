@@ -197,7 +197,7 @@ class WeirdReaction(BaseCommand):
 
         try:
             score = int(response.strip())
-            is_weird = score >= 7
+            is_weird = score >= 9
             logger.info('Weirdness score %d, weird = %s | %s: %s', score, is_weird, user, message)
             return is_weird
         except:
