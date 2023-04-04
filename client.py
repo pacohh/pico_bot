@@ -25,7 +25,6 @@ class Client(discord.Client):
         self.register_command(commands.F1CreateEventsCommand)
         self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
-        self.register_command(commands.WeirdReaction)
 
     def register_command(self, command_class):
         """Register a command class."""
