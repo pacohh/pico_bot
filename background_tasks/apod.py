@@ -23,7 +23,7 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
     """
 
     crontab = '0 5 * * 0'
-    run_on_start = True
+    run_on_start = False
 
     def __init__(self, client):
         super().__init__(client)
