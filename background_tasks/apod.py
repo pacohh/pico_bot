@@ -13,6 +13,7 @@ from utils import redis
 
 APOD_URL = 'https://apod.nasa.gov/apod/'
 LOCAL_LINK_RE = re.compile(r'\((ap\d+\.html\))')
+EXPLANATION_MAX_LEN = 4000
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,8 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
         explanation = md(explanation_html).strip()
         explanation = explanation[18:]
         explanation = LOCAL_LINK_RE.sub(rf'({APOD_URL}\1)', explanation)
+        if len(explanation) > EXPLANATION_MAX_LEN:
+            explanation = f'{explanation[:EXPLANATION_MAX_LEN]}…'
 
         return {
             'content': None,
