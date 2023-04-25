@@ -39,11 +39,6 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
 
         cls.previous_message = message
 
-        # Log number of messages being changed if there is any
-        responses_count = sum(map(len, cls.previous_responses.values()))
-        if responses_count:
-            logger.info('Updating %d !who messages', responses_count)
-
         # Update messages
         for responses in cls.previous_responses.values():
             for response in responses:
