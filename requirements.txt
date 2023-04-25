@@ -11,6 +11,8 @@ emoji==1.7.0
 tenacity==8.1.0
 redis==4.5.2
 cinemagoer==2022.12.27
+beautifulsoup4==4.12.2
+markdownify==0.11.6
 
 yfinance==0.1.77
 plotly==5.10.0
