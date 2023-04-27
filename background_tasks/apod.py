@@ -24,7 +24,7 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
     Task that posts the Astronomy Picture of the Day to a webhook.
     """
 
-    crontab = '0 5 * * 0'
+    crontab = '0 5 * * *'
     run_on_start = False
 
     def __init__(self, client):
