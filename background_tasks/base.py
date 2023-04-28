@@ -28,11 +28,15 @@ class CrontabDiscordTask(DiscordTask, ABC):
     crontab = '* * * * *'
     run_on_start = False
     raise_errors = False
+    timezone = 'Europe/Zurich'
 
     def __init__(self, client):
         super().__init__(client)
         self.cron = aiocron.crontab(
-            self.crontab, func=self.work_wrapper, start=False, tz=pytz.timezone('Europe/London')
+            self.crontab,
+            func=self.work_wrapper,
+            start=False,
+            tz=pytz.timezone(self.timezone),
         )
 
     async def start(self):
