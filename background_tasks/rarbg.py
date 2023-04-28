@@ -6,7 +6,7 @@ from imdb.helpers import resizeImage
 
 import config
 from background_tasks.base import CrontabDiscordTask
-from utils import rarbg_api, redis
+from utils import numbers, rarbg_api, redis
 from utils.datetime import utc_now
 
 REDIS_KEY = 'rarbg_handled_movies'
@@ -85,7 +85,11 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
         embed.title = data['title']
         embed.url = url
         embed.set_image(url=resizeImage(data['cover url'], height=300))
-        embed.add_field(name='Rating', value=f"{data['rating']}/10", inline=True)
+        embed.add_field(
+            name='Rating',
+            value=f"{data['rating']}/10 ({numbers.human_format(data['votes'])})",
+            inline=True,
+        )
         embed.add_field(name='Year', value=data['year'], inline=True)
         embed.add_field(name='Genres', value=', '.join(data['genres']), inline=False)
         await self.channel.send(
