@@ -87,6 +87,7 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
         # Ignore old movies
         current_year = utc_now().year
         if data['year'] < current_year - 1:
+            logger.info("Ignoring movie %s from %d, it's too old", imdb_id, data['year'])
             await self.redis.sadd(REDIS_KEY, imdb_id)
             return
 
@@ -106,3 +107,5 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
             embed=embed,
         )
         await self.redis.sadd(REDIS_KEY, imdb_id)
+
+        logger.info('Handled movie %s', imdb_id)
