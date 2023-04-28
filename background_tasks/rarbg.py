@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import discord
 import imdb
 from imdb.helpers import resizeImage
@@ -10,6 +12,9 @@ from utils import numbers, rarbg_api, redis
 from utils.datetime import utc_now
 
 REDIS_KEY = 'rarbg_handled_movies'
+
+
+logger = logging.getLogger(__name__)
 
 
 class RarbgNewMoviesTask(CrontabDiscordTask):
@@ -33,6 +38,8 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
 
     async def work(self):
         new_movie_ids = await self.get_new_movie_ids()
+
+        logger.info('Got %d new movies: %s', len(new_movie_ids), new_movie_ids)
 
         for movie_id in new_movie_ids:
             await self.handle_new_movie(movie_id)
@@ -70,6 +77,8 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
     async def handle_new_movie(self, imdb_id: str) -> None:
         def get_movie():
             return imdb.Cinemagoer().get_movie(imdb_id[2:])
+
+        logger.info('Handling movie %s', imdb_id)
 
         movie = await self.client.loop.run_in_executor(None, get_movie)
         data = movie.data
