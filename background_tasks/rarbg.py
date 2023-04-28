@@ -57,7 +57,7 @@ class RarbgNewMoviesTask(CrontabDiscordTask):
                 'category': '50;51;46',
                 'sort': 'seeders',
                 'format': 'json_extended',
-                'limit': 20,
+                'limit': 50,
             }
         )
         movie_ids = set()
