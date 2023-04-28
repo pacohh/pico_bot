@@ -26,7 +26,7 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
 
     crontab = '30 4 * * *'
     timezone = 'UTC'
-    run_on_start = True
+    run_on_start = False
 
     def __init__(self, client):
         super().__init__(client)
