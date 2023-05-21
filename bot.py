@@ -88,6 +88,27 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
     await on_reaction_add(reaction, member)
 
 
+@client.event
+async def on_voice_state_update(
+    member: discord.Member,
+    before: discord.VoiceState,
+    after: discord.VoiceState,
+):
+    if before.channel and before.channel.id != config.VOICE_CREATOR_CHANNEL_ID:
+        await before.channel.send(
+            f'{member.mention} left',
+            silent=True,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    if after.channel and after.channel.id != config.VOICE_CREATOR_CHANNEL_ID:
+        await after.channel.send(
+            f'{member.mention} joined',
+            silent=True,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+
 def log_message(message):
     guild = f'Guild: {message.guild.id}:"{message.guild.name}" | ' if message.guild else ''
     logger.info(
