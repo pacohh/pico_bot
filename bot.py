@@ -94,6 +94,10 @@ async def on_voice_state_update(
     before: discord.VoiceState,
     after: discord.VoiceState,
 ):
+    if before.channel == after.channel:
+        # This a voice state change not related with joining or leaving a channel
+        return
+
     if before.channel and before.channel.id != config.VOICE_CREATOR_CHANNEL_ID:
         await before.channel.send(
             f'{member.mention} left',
