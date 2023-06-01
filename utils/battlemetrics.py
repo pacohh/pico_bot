@@ -30,7 +30,7 @@ async def get_player_server(player_id: str, token: str) -> Optional[dict]:
     endpoint = f'/players/{player_id}'
     params = {
         'include': 'server',
-        'fields[server]': 'name,country,players,maxPlayers,details',
+        'fields[server]': 'name,country,players,maxPlayers,details,ip,port,portQuery',
     }
     try:
         res = await _send_request(endpoint, token=token, params=params)
@@ -60,6 +60,9 @@ async def get_player_server(player_id: str, token: str) -> Optional[dict]:
         'server': {
             'id': server['id'] if server else None,
             'name': server['attributes']['name'] if server else None,
+            'ip': server_attrs['ip'] if server else None,
+            'port': server_attrs['port'] if server else None,
+            'port_query': server_attrs['portQuery'] if server else None,
             'country': server_attrs['country'].lower() if server else None,
             'emote': config.BM_SERVER_EMOTES.get(server['id']) if server else None,
             'game': server['relationships']['game']['data']['id'] if server else None,

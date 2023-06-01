@@ -1,5 +1,6 @@
 import logging
 
+import a2s
 import discord
 
 import commands
@@ -56,6 +57,8 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
         for server in servers.values():
             server['pepegas'].sort(key=lambda name: name.lower())
+            rules = await a2s.arules((server['ip'], server['port_query']))
+            server['next_layer'] = rules.get('NextLayer_s')
 
         global servers_data
         was_empty = not servers_data
