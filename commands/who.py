@@ -73,13 +73,15 @@ class WhoMessageBuilder:
     @classmethod
     def _build_server(cls, server: dict) -> str:
         emote = server['emote'] if server['emote'] else f":flag_{server['country']}:"
-        nlayer = server['next_layer']
-        next_layer = f" ⇒ {prettify_layer_name(nlayer)}" if nlayer else ''
+        players = ''
+        if server['players'] / server['max_players'] < 0.6:
+            players = f"Players: {server['players']}/{server['max_players']} (+{server['queue']})\n"
         return (
             f"{emote}   **{server['name']}**\n"
             f"```yaml\n"
             f"Pepegas: {', '.join(server['pepegas'])}\n"
-            f"Layer:   {prettify_layer_name(server['layer'])}{next_layer}\n"
-            f"Players: {server['players']}/{server['max_players']} (+{server['queue']})\n"
+            f"Layer:   {prettify_layer_name(server['layer'])}\n"
+            f"Next:    {prettify_layer_name(server['next_layer']) or '–'}\n"
+            f"{players}"
             f"```"
         )

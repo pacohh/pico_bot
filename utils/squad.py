@@ -7,6 +7,9 @@ LAYER_REPLACEMENTS = {
 
 
 def prettify_layer_name(name: str) -> str:
+    if not name:
+        return ''
+
     # It seems that some mod layers can have spaces in the layer name
     if '_' in name:
         name = name.split('_')
