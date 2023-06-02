@@ -44,4 +44,4 @@ class Client(discord.Client):
         self.loop.create_task(background_tasks.AstronomyPictureOfTheDayTask(self).start())
         self.loop.create_task(background_tasks.BattlemetricsPlayersTask(self).start())
         self.loop.create_task(background_tasks.DeleteChatConversations(self).start())
-        self.loop.create_task(background_tasks.RarbgNewMoviesTask(self).start())
+        self.loop.create_task(background_tasks.YtsNewMoviesTask(self).start())
