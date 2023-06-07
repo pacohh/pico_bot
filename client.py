@@ -20,8 +20,6 @@ class Client(discord.Client):
         """Register all available commands."""
         self.register_command(commands.ChatCommand)
         self.register_command(commands.WhoCommand)
-        self.register_command(commands.FinanceCandleChartCommand)
-        self.register_command(commands.FinanceLineChartCommand)
         self.register_command(commands.F1CreateEventsCommand)
         self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
