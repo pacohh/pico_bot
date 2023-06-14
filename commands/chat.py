@@ -91,6 +91,7 @@ class ChatConversation:
 class ChatCommand(BaseCommand):
     command = ''
     conversations: set[ChatConversation] = set()
+    allow_pm = True
 
     @property
     def bot_mention(self) -> str:
@@ -111,7 +112,11 @@ class ChatCommand(BaseCommand):
     async def handle(
         self, message: discord.Message, response_channel: discord.TextChannel
     ) -> discord.Message:
-        loading = await response_channel.send('<a:loading:1085904578798694410>')
+        is_dm = isinstance(response_channel, discord.DMChannel)
+        if is_dm:
+            await response_channel.typing()
+        else:
+            loading = await response_channel.send('<a:loading:1085904578798694410>')
 
         # Get or create Conversation
         conversation = self.get_or_create_conversation(message)
@@ -136,7 +141,8 @@ class ChatCommand(BaseCommand):
             return response
 
         # Send response
-        await response_channel.delete_messages([loading])
+        if not is_dm:
+            await response_channel.delete_messages([loading])
         response = await response_channel.send(content=response_text, reference=message)
         conversation.add_assistant_message(response)
 
