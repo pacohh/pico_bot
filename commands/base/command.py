@@ -87,7 +87,7 @@ class BaseCommand:
 
     def get_response_channel(self, message, response_channel):
         channel = response_channel or message.channel
-        if not isinstance(channel, (discord.TextChannel, discord.DMChannel)):
+        if not isinstance(channel, (discord.TextChannel, discord.DMChannel, discord.Thread)):
             channel = self.client.get_channel(channel)
         return channel
 
