@@ -115,11 +115,14 @@ async def on_voice_state_update(
 
 def log_message(message):
     guild = f'Guild: {message.guild.id}:"{message.guild.name}" | ' if message.guild else ''
+    if isinstance(message.channel, discord.DMChannel):
+        channel = f'DM: {message.channel.id}:"{message.channel.recipient or "unknown"}"'
+    else:
+        channel = f'Channel: {message.channel.id}:"{getattr(message.channel, "name", "")}"'
     logger.info(
-        'Handling message | %sChannel: %s:"%s" | Author: "%s" | Message: "%s"',
+        'Handling message | %s%s | Author: "%s" | Message: "%s"',
         guild,
-        message.channel.id,
-        message.channel.name or '',
+        channel,
         message.author,
         message.clean_content,
     )
