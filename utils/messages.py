@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import discord
 
@@ -12,7 +12,7 @@ async def send_long_message(
     channel: discord.abc.Messageable,
     content: str,
     reference: Optional[discord.message.Message] = None,
-) -> list[discord.message.Message]:
+) -> List[discord.message.Message]:
     messages = []
 
     lines = _split_lines(content)
@@ -45,7 +45,7 @@ async def send_long_message(
     return messages
 
 
-def _split_lines(content: str) -> list[str]:
+def _split_lines(content: str) -> List[str]:
     lines = []
     for line in content.split('\n'):
         if len(line) > MESSAGE_MAX_LENGTH:
@@ -62,7 +62,7 @@ def _split_lines(content: str) -> list[str]:
 
 async def _send_lines(
     channel: discord.abc.Messageable,
-    lines: list[str],
+    lines: List[str],
     reference: Optional[discord.message.Message] = None,
 ) -> discord.message.Message:
     content = '\n'.join(lines)
