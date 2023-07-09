@@ -10,6 +10,7 @@ import discord
 
 from commands.base import BaseCommand
 from utils import emojis
+from utils.messages import send_long_message
 from utils.openai import ModerationFlaggedError
 from utils.openai import chat as openai_chat
 
@@ -76,9 +77,10 @@ class ChatConversation:
 
         self.openai_messages.append({'role': 'user', 'content': prompt})
 
-    def add_assistant_message(self, message: discord.Message) -> None:
-        self.discord_messages.add(message.id)
-        self.openai_messages.append({'role': 'assistant', 'content': message.clean_content})
+    def add_assistant_messages(self, messages: list[discord.Message]) -> None:
+        for message in messages:
+            self.discord_messages.add(message.id)
+            self.openai_messages.append({'role': 'assistant', 'content': message.clean_content})
 
     @property
     def bot_mention(self) -> str:
@@ -143,10 +145,10 @@ class ChatCommand(BaseCommand):
         # Send response
         if not is_dm:
             await response_channel.delete_messages([loading])
-        response = await response_channel.send(content=response_text, reference=message)
-        conversation.add_assistant_message(response)
+        responses = await send_long_message(response_channel, response_text, reference=message)
+        conversation.add_assistant_messages(responses)
 
-        return response
+        return responses[0]
 
     def get_or_create_conversation(self, message: discord.Message) -> ChatConversation:
         conversation = self.get_conversation(message)
