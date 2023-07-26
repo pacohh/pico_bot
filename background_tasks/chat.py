@@ -6,7 +6,7 @@ import time
 from background_tasks.base import CrontabDiscordTask
 from commands import ChatCommand
 
-CONVERSATION_MAX_AGE_SECONDS = 30 * 60  # 30 minutes
+CONVERSATION_MAX_AGE_SECONDS = 24 * 3600  # 24 hours
 
 logger = logging.getLogger(__name__)
 
