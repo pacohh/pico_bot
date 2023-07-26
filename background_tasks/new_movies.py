@@ -71,11 +71,12 @@ class YtsNewMoviesTask(CrontabDiscordTask):
                     'size': torrent['size'],
                     'peers': torrent['peers'],
                     'seeds': torrent['seeds'],
+                    'total_seeds': sum((tor['seeds'] for tor in torrents.values())),
                 }
             )
 
-        # Sort by number of seeds
-        movies.sort(key=lambda movie_: movie_['seeds'], reverse=True)
+        # Sort by total number of seeds
+        movies.sort(key=lambda movie_: movie_['total_seeds'], reverse=True)
         # Only return the top N movies
         movies = movies[:30]
 
