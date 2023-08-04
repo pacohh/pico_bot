@@ -57,9 +57,7 @@ class ChatConversation:
         self.openai_messages: list[dict[str, str]] = [
             {
                 'role': 'system',
-                'content': (
-                    "You are the world's leading expert in whatever I am about to ask you about"
-                ),
+                'content': "The assistant should be informative.",
             },
         ]
 
