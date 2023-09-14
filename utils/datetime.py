@@ -54,3 +54,7 @@ def format_datetime(datetime, format_='%Y.%m.%d %H:%M:%S'):
 
 def format_datetime_simple(datetime, format_='%H:%M'):
     return format_datetime(datetime, format_=format_)
+
+
+def to_epoch(datetime) -> int:
+    return int((datetime - dt.datetime(1970, 1, 1, tzinfo=datetime.tzinfo)).total_seconds())
