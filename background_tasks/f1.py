@@ -4,14 +4,19 @@ import datetime
 import json
 import logging
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 import dateutil.parser
+import fastf1.core
+import pandas as pd
 from aiohttp_requests import requests
 
 import config
 from background_tasks.base import CrontabDiscordTask
+from utils import f1, redis
 from utils.datetime import to_epoch, utc_now
+
+REDIS_KEY = 'f1_last_handled_session'
 
 SCHEDULE_URL = 'https://raw.githubusercontent.com/sportstimes/f1/main/_db/f1/{}.json'
 
@@ -23,6 +28,19 @@ SESSIONS_MAPPING = {
     'sprint': 'Sprint',
     'qualifying': 'Quali',
     'gp': 'Race',
+}
+
+TEAM_EMOTES = {
+    'Alfa Romeo': '<:a:1152607754180116652>',
+    'AlphaTauri': '<:a:1152607462747287573>',
+    'Alpine': '<:a:1152607565298024458>',
+    'Aston Martin': '<:a:1152607683678056561>',
+    'Ferrari': '<:a:1152607316722589746>',
+    'Haas F1 Team': '<:a:1152607627621183488>',
+    'McLaren': '<:a:1152607334451912744>',
+    'Mercedes': '<:a:1152607280827727902>',
+    'Red Bull Racing': '<:a:1152607379158999060>',
+    'Williams': '<:a:1152607527930953909>',
 }
 
 logger = logging.getLogger(__name__)
@@ -120,3 +138,113 @@ class F1RaceWeek(CrontabDiscordTask):
             )
 
         return '\n'.join(lines)
+
+
+class F1Results(CrontabDiscordTask):
+    """
+    Task that post session results when they become available.
+    """
+
+    ALLOWED_SESSIONS = {'sprint shootout', 'sprint', 'qualifying', 'race'}
+
+    crontab = '* * * * * 0'
+    run_on_start = False
+
+    def __init__(self, client):
+        super().__init__(client)
+        self.redis = redis.get_client()
+        self._channel = None
+
+    @property
+    def channel(self):
+        if not self._channel:
+            self._channel = self.client.get_channel(config.DISCORD_F1_CHANNEL_ID)
+        return self._channel
+
+    async def work(self):
+        session = await f1.get_latest_session(self.client)
+        last_handled_session = await self.get_redis()
+        if str(session) == last_handled_session:
+            return
+        if session.event.is_testing():
+            return
+        if session.name.lower() not in self.ALLOWED_SESSIONS:
+            return
+
+        try:
+            await self.client.loop.run_in_executor(None, session.load)
+        except fastf1.core.DataNotLoadedError:
+            return
+
+        session_status = session.session_status['Status'].iloc[-1]
+        if session_status.lower() != 'ends':
+            return
+
+        msg = self.build_message(session)
+        await self.channel.send(content=msg)
+        await self.set_redis(str(session))
+
+    async def get_redis(self) -> str:
+        value = await self.redis.get(REDIS_KEY)
+        if value:
+            return value.decode()
+
+    async def set_redis(self, name: str) -> None:
+        await self.redis.set(REDIS_KEY, name)
+
+    def build_message(self, session: fastf1.core.Session) -> str:
+        results = session.results
+        lines = [f'# {session.name} results']
+        for pos, line in results.iterrows():
+            if session.name.lower() in {'sprint', 'race'}:
+                lines.append(self.format_race_result(pos, line))
+            else:
+                lines.append(self.format_quali_result(line))
+        return '\n'.join(lines)
+
+    def format_race_result(self, pos, line) -> str:
+        emote = TEAM_EMOTES.get(line.TeamName)
+        pos_change = self.format_position_change(line)
+        time = self.format_time(pos, line.Time)
+        return (
+            f'{emote}'
+            f'   `{line.ClassifiedPosition:>2}'
+            f' | {pos_change}'
+            f'   {line.Abbreviation}'
+            f'   {time:<11}'
+            f'   {int(line.Points):>2}`'
+        )
+
+    def format_quali_result(self, line) -> str:
+        emote = TEAM_EMOTES.get(line.TeamName)
+        q1 = self.format_time('1', line.Q1, quali=True)
+        q2 = self.format_time('1', line.Q2, quali=True)
+        q3 = self.format_time('1', line.Q3, quali=True)
+        return (
+            f'{emote}'
+            f'   `{int(line.Position):>2}'
+            f'   {line.Abbreviation}'
+            f'   {q1:<11}'
+            f'   {q2:<11}'
+            f'   {q3:<11}`'
+        )
+
+    @staticmethod
+    def format_position_change(line) -> str:
+        position_change = int(line.GridPosition - line.Position)
+        change_symbol = '▲' if position_change > 0 else '▽'
+        if position_change == 0:
+            return '  –'
+        else:
+            return f'{change_symbol}{abs(position_change):>2}'
+
+    @staticmethod
+    def format_time(pos: str, timedelta: Union[pd.Timedelta, pd.NaT], quali: bool = False) -> str:
+        if pd.isnull(timedelta):
+            return 'DNF' if not quali else ''
+        co = timedelta.components
+        if pos == '1' or quali:
+            time = f'{co.hours}:{co.minutes:>02}:{co.seconds:>02}.{co.milliseconds}'
+        else:
+            time = f'+{timedelta.seconds}.{co.milliseconds}s'
+        return time
