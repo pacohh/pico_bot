@@ -193,8 +193,9 @@ class F1Results(CrontabDiscordTask):
         await self.redis.set(REDIS_KEY, name)
 
     def build_message(self, session: fastf1.core.Session) -> str:
+        name = session.session_info.get('Meeting', {}).get('Name', '').replace('Grand Prix', 'GP')
+        lines = [f'# {name} {session.name} results']
         results = session.results
-        lines = [f'# {session.name} results']
         for pos, line in results.iterrows():
             if session.name.lower() in {'sprint', 'race'}:
                 lines.append(self.format_race_result(pos, line))
