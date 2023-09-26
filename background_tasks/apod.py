@@ -13,8 +13,9 @@ from background_tasks.base import CrontabDiscordTask
 from utils import redis
 
 APOD_URL = 'https://apod.nasa.gov/apod/'
-LOCAL_LINK_RE = re.compile(r'\((ap\d+\.html)\)')
+MD_LINK_RE = re.compile(r'\]\(([^) ]+)\)')
 EXPLANATION_MAX_LEN = 4000
+
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
 
         description = f'\n{credit}\n\n{explanation}'
         description = description.replace(':** ', '**\n')
+        description = make_links_absolute(description)
 
         if len(description) > EXPLANATION_MAX_LEN:
             description = f'{description[:EXPLANATION_MAX_LEN]}…'
@@ -88,5 +90,15 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
 def html_to_markdown(html: str) -> str:
     result = html.replace('\n', ' ')
     result = md(result).strip()
-    result = LOCAL_LINK_RE.sub(rf'({APOD_URL}\1)', result)
     return result
+
+
+def make_links_absolute(text: str) -> str:
+    def absolute_link(match: re.Match) -> str:
+        link = match.group(1)
+        if link.startswith('http'):
+            return f']({link})'
+        return f'](https://apod.nasa.gov/apod/{link})'
+
+    result_text = MD_LINK_RE.sub(absolute_link, text)
+    return result_text
