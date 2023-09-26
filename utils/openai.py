@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import base64
 import logging
+from io import BytesIO
 
 from aiohttp_requests import requests
 from tenacity import (
@@ -68,6 +70,20 @@ async def moderation(text: str) -> list[str]:
     data = await response.json()
     flags = [name for name, value in data['results'][0]['categories'].items() if value is True]
     return flags
+
+
+async def create_image(prompt: str) -> BytesIO:
+    response = await _send_request(
+        '/images/generations',
+        method='POST',
+        json_={'prompt': prompt, 'response_format': 'b64_json'},
+    )
+    data = await response.json()
+    b64_json = data['data'][0]['b64_json']
+    image = BytesIO()
+    image.write(base64.decodebytes(b64_json.encode()))
+    image.seek(0)
+    return image
 
 
 async def _send_request(endpoint, method='GET', token=None, params=None, json_=None):
