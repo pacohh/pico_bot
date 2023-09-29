@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class BingGenerateImageCommand(BaseCommand):
-    command = '!bing-image'
+    command = '!bing_image'
     allow_pm = False
 
     async def handle(self, message, response_channel):
