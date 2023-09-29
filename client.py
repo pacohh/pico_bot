@@ -22,6 +22,7 @@ class Client(discord.Client):
         self.register_command(commands.GenerateImageCommand)
         self.register_command(commands.WhoCommand)
         self.register_command(commands.F1CreateEventsCommand)
+        self.register_command(commands.BingGenerateImageCommand)
         self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
 
