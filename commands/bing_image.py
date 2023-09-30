@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 
 import discord
 from aiohttp_requests import requests
@@ -15,8 +16,8 @@ BING_AUTH_COOKIE = env.require('BING_AUTH_COOKIE')
 logger = logging.getLogger(__name__)
 
 
-class BingGenerateImageCommand(BaseCommand):
-    command = '!bing_image'
+class GenerateImageCommand(BaseCommand):
+    re_command = re.compile('^![img|image|imagine]')
     allow_pm = False
 
     async def handle(self, message, response_channel):

@@ -22,6 +22,7 @@ def error_handler(method):
 
 class BaseCommand:
     command = None
+    re_command = None
     allow_pm = False
     channels = None
     roles = None
@@ -61,7 +62,12 @@ class BaseCommand:
         return True
 
     def is_correct_command(self, message):
-        return message.content.lower().startswith(self.command.lower())
+        if self.command is not None:
+            return message.content.lower().startswith(self.command.lower())
+        elif self.re_command is not None:
+            return self.re_command.search(message.content.lower()) is not None
+        else:
+            raise RuntimeError()
 
     def get_message_member(self, message):
         member = message.author
