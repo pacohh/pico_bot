@@ -79,6 +79,7 @@ def setup_logging():
                 'websockets': {'level': 'WARNING'},
                 'urllib3': {'level': 'WARNING'},
                 'aiocache': {'level': 'WARNING'},
+                'httpx': {'level': 'WARNING'},
             },
         }
     )

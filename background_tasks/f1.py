@@ -164,6 +164,8 @@ class F1Results(CrontabDiscordTask):
     async def work(self):
         session = await f1.get_latest_session(self.client)
         last_handled_session = await self.get_redis()
+        if not session:
+            return
         if str(session) == last_handled_session:
             return
         if session.event.is_testing():
