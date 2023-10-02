@@ -43,7 +43,7 @@ class GenerateImageCommand(BaseCommand):
 
         try:
             gen = ImageGenAsync(BING_AUTH_COOKIE)
-            polling_endpoint, wait_time, token_left = await self.create_images(gen, prompt)
+            polling_endpoint, wait_time, token_left = await self.submit_image_request(gen, prompt)
         except Exception as exc:
             response = await response_channel.send(f'Error: {exc.args[0]}')
             return response
@@ -65,8 +65,8 @@ class GenerateImageCommand(BaseCommand):
         return response
 
     @staticmethod
-    async def create_images(gen: ImageGenAsync, prompt: str) -> tuple[str, str, str]:
-        return await gen.create_images(prompt)
+    async def submit_image_request(gen: ImageGenAsync, prompt: str) -> tuple[str, str, str]:
+        return await gen.submit_image_request(prompt)
 
     @staticmethod
     async def poll_images(gen: ImageGenAsync, polling_endpoint: str) -> list[io.BytesIO]:
@@ -134,7 +134,7 @@ class ImageGenAsync:
     async def __aexit__(self, *excinfo) -> None:
         await self.session.aclose()
 
-    async def create_images(self, prompt: str) -> tuple[str, str, str]:
+    async def submit_image_request(self, prompt: str) -> tuple[str, str, str]:
         """
         Fetches image links from Bing
         Parameters:
