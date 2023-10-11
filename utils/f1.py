@@ -8,8 +8,10 @@ from fastf1.events import Event
 from utils.datetime import utc_now
 
 
-async def get_latest_session(client) -> Session:
+async def get_latest_session(client) -> Optional[Session]:
     event = await get_current_event(client)
+    if not event:
+        return
     now = utc_now()
 
     session = None
