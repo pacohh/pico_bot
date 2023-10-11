@@ -64,7 +64,7 @@ class YtsNewMoviesTask(CrontabDiscordTask):
                     'imdb_id': movie['imdb_code'],
                     'title': movie['title_english'],
                     'year': movie['year'],
-                    'genres': movie['genres'],
+                    'genres': movie.get('genres', []),
                     'image': movie['large_cover_image'],
                     'rating': movie['rating'],
                     'quality': torrent['quality'],
