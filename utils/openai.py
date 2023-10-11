@@ -49,7 +49,7 @@ async def chat(messages: list[dict[str, str]]) -> str:
         '/chat/completions',
         method='POST',
         json_={
-            'model': 'gpt-3.5-turbo',
+            'model': 'gpt-4',
             'messages': messages,
             'temperature': 0.1,
         },
