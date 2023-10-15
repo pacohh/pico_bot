@@ -45,5 +45,6 @@ class Client(discord.Client):
         self.loop.create_task(background_tasks.DeleteChatConversations(self).start())
         self.loop.create_task(background_tasks.F1RaceWeek(self).start())
         self.loop.create_task(background_tasks.F1Results(self).start())
+        self.loop.create_task(background_tasks.LiveUaMap(self).start())
         self.loop.create_task(background_tasks.NewsMinimalistTask(self).start())
         self.loop.create_task(background_tasks.YtsNewMoviesTask(self).start())

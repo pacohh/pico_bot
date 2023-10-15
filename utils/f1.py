@@ -10,7 +10,7 @@ from utils.datetime import utc_now
 
 async def get_latest_session(client) -> Optional[Session]:
     event = await get_current_event(client)
-    if not event:
+    if event is None:
         return
     now = utc_now()
 

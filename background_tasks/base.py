@@ -1,5 +1,8 @@
+import asyncio
 import logging
+import random
 from abc import ABC, abstractmethod
+from typing import Tuple, Union
 
 import aiocron
 import pytz
@@ -47,6 +50,45 @@ class CrontabDiscordTask(DiscordTask, ABC):
 
         while True:
             await self.cron.next()
+
+    async def work_wrapper(self):
+        try:
+            await self.work()
+        except Exception:
+            if self.raise_errors:
+                raise
+            else:
+                logger.exception('Unexpected exception in crontab discord task')
+
+
+class SleepDiscordTask(DiscordTask, ABC):
+    """Abstract class for sleep background tasks."""
+
+    sleep_seconds: Union[int, Tuple[int, int]]
+    raise_errors = False
+
+    def __init__(self, client):
+        super().__init__(client)
+
+    async def start(self):
+        await self.client.wait_until_ready()
+
+        while True:
+            await self.work_wrapper()
+            sleep_seconds = self._calculate_sleep_seconds()
+            await asyncio.sleep(sleep_seconds)
+
+    def _calculate_sleep_seconds(self) -> int:
+        if isinstance(self.sleep_seconds, int):
+            return self.sleep_seconds
+        elif isinstance(self.sleep_seconds, tuple):
+            return random.randint(*self.sleep_seconds)
+        else:
+            raise ValueError(
+                'self.sleep_seconds should be an int or a tuple, but is %s: %s',
+                type(self.sleep_seconds),
+                self.sleep_seconds,
+            )
 
     async def work_wrapper(self):
         try:
