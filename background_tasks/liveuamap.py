@@ -130,10 +130,10 @@ class LiveUaMap(SleepDiscordTask):
         return embed
 
     async def post_events(self, embeds: list[dict]) -> None:
-        for embeds_chunk in chunks(embeds, 10):
+        for embed in embeds:
             data = {
                 'content': None,
-                'embeds': embeds_chunk,
+                'embeds': embed,
                 'username': 'Liveuamap',
                 'avatar_url': 'https://cdn.discordapp.com/attachments/1163233625312075806/1163247566557819060/ua_cropped.png',
             }
