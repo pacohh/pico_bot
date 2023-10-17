@@ -74,7 +74,10 @@ class SleepDiscordTask(DiscordTask, ABC):
         await self.client.wait_until_ready()
 
         while True:
-            await self.work_wrapper()
+            try:
+                await self.work_wrapper()
+            except:
+                logger.exception('Unknown exception')
             sleep_seconds = self._calculate_sleep_seconds()
             await asyncio.sleep(sleep_seconds)
 

@@ -77,6 +77,8 @@ class YtsNewMoviesTask(CrontabDiscordTask):
 
         # Sort by total number of seeds
         movies.sort(key=lambda movie_: movie_['total_seeds'], reverse=True)
+        # Filter out movies with an IMDB rating of less than 6.0
+        movies = [movie for movie in movies if movie['rating'] >= 6.0]
         # Only return the top N movies
         movies = movies[:30]
 

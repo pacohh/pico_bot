@@ -45,7 +45,9 @@ class GenerateImageCommand(BaseCommand):
             gen = ImageGenAsync(BING_AUTH_COOKIE)
             polling_endpoint, wait_time, token_left = await self.submit_image_request(gen, prompt)
         except Exception as exc:
-            response = await response_channel.send(f'Error: {exc.args[0]}')
+            if loading:
+                await response_channel.delete_messages([loading])
+            response = await response_channel.send(f'Error: {exc.args[0]}', reference=message)
             return response
 
         if wait_time and loading:

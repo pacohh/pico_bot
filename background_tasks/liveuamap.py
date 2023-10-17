@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup, Tag
 import config
 from background_tasks.base import SleepDiscordTask
 from utils import redis
-from utils.lists import chunks
 
 logger = logging.getLogger(__name__)
 
