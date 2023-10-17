@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Union
 
 import pytz
 
@@ -56,5 +57,13 @@ def format_datetime_simple(datetime, format_='%H:%M'):
     return format_datetime(datetime, format_=format_)
 
 
-def to_epoch(datetime) -> int:
-    return int((datetime - dt.datetime(1970, 1, 1, tzinfo=datetime.tzinfo)).total_seconds())
+def to_epoch(datetime: Union[dt.datetime, dt.date]) -> int:
+    return int(datetime.strftime('%s'))
+
+
+def epoch_to_date(epoch: int) -> dt.date:
+    return dt.date.fromtimestamp(epoch)
+
+
+def epoch_to_datetime(epoch: int) -> dt.datetime:
+    return dt.datetime.fromtimestamp(epoch)

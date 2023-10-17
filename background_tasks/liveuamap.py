@@ -118,7 +118,7 @@ class LiveUaMap(SleepDiscordTask):
 
     def build_event_embed(self, event: dict) -> dict:
         embed = {
-            'description': f"## [[↗︎]]({event['link']}) {event['title']}",
+            'description': f"### [[↗︎]]({event['link']}) {event['title']}",
         }
         if event['image']:
             embed['image'] = {'url': event['image']}
@@ -133,7 +133,7 @@ class LiveUaMap(SleepDiscordTask):
         for embed in embeds:
             data = {
                 'content': None,
-                'embeds': embed,
+                'embeds': [embed],
                 'username': 'Liveuamap',
                 'avatar_url': 'https://cdn.discordapp.com/attachments/1163233625312075806/1163247566557819060/ua_cropped.png',
             }
