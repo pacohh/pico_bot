@@ -76,12 +76,19 @@ class WhoMessageBuilder:
         players = ''
         if server['players'] / server['max_players'] < 0.6:
             players = f"Players: {server['players']}/{server['max_players']} (+{server['queue']})\n"
+        next_layer_data = server['next_layer_data']
+        next_f1 = next_layer_data['team1']['faction'] if next_layer_data else ''
+        next_f2 = next_layer_data['team2']['faction'] if next_layer_data else ''
+        next_v1 = next_layer_data['team1']['vehicles'] if next_layer_data else ''
+        next_v2 = next_layer_data['team2']['vehicles'] if next_layer_data else ''
         return (
             f"{emote}   **{server['name']}**\n"
             f"```yaml\n"
             f"Pepegas: {', '.join(server['pepegas'])}\n"
             f"Layer:   {prettify_layer_name(server['layer'])}\n"
             f"Next:    {prettify_layer_name(server['next_layer']) or '–'}\n"
+            f"         > {next_f1}: {', '.join(next_v1) if next_v1 else '–'}\n"
+            f"         > {next_f2}: {', '.join(next_v2) if next_v2 else '–'}\n"
             f"{players}"
             f"```"
         )

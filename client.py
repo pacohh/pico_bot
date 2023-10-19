@@ -48,4 +48,5 @@ class Client(discord.Client):
         self.loop.create_task(background_tasks.HackerNewsTask(self).start())
         self.loop.create_task(background_tasks.LiveUaMap(self).start())
         self.loop.create_task(background_tasks.NewsMinimalistTask(self).start())
+        self.loop.create_task(background_tasks.SquadLayersTask(self).start())
         self.loop.create_task(background_tasks.YtsNewMoviesTask(self).start())

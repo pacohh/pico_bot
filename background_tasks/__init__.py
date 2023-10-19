@@ -6,3 +6,4 @@ from .hacker_news import HackerNewsTask
 from .liveuamap import LiveUaMap
 from .new_movies import YtsNewMoviesTask
 from .news_minimalist import NewsMinimalistTask
+from .squad import SquadLayersTask

@@ -5,6 +5,7 @@ import discord
 
 import commands
 import config
+from background_tasks import squad
 from background_tasks.base import CrontabDiscordTask
 from utils import battlemetrics
 
@@ -59,6 +60,7 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
             server['pepegas'].sort(key=lambda name: name.lower())
             rules = await a2s.arules((server['ip'], server['port_query']))
             server['next_layer'] = rules.get('NextLayer_s')
+            server['next_layer_data'] = squad.layers_data.get(server['next_layer'])
 
         global servers_data
         was_empty = not servers_data
