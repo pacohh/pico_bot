@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class GenerateImageCommand(BaseCommand):
-    re_command = re.compile('^![img|image|imagine]')
+    re_command = re.compile(r'^!(img|image|imagine)\b')
     allow_pm = False
 
     async def handle(self, message, response_channel):
