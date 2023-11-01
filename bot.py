@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 
 import discord
 from discord import RawReactionActionEvent
@@ -24,6 +25,12 @@ def main():
 @client.event
 async def on_ready():
     logger.info('Logged in as "%s" (%s)', client.user.name, client.user.id)
+
+
+async def remove_banner():
+    server = client.get_guild(config.DISCORD_SERVER_ID)
+    await server.edit(banner=None)
+    sys.exit(0)
 
 
 @client.event
