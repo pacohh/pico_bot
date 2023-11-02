@@ -63,6 +63,8 @@ class HackerNewsTask(CrontabDiscordTask):
 
         hits = []
         for hit in raw_hits:
+            if 'title' not in hit:
+                continue
             hits.append(
                 {
                     'id': int(hit['objectID']),
