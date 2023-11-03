@@ -43,6 +43,7 @@ class Client(discord.Client):
         self.loop.create_task(background_tasks.AstronomyPictureOfTheDayTask(self).start())
         self.loop.create_task(background_tasks.BattlemetricsPlayersTask(self).start())
         self.loop.create_task(background_tasks.DeleteChatConversations(self).start())
+        self.loop.create_task(background_tasks.F1DaySchedule(self).start())
         self.loop.create_task(background_tasks.F1RaceWeek(self).start())
         self.loop.create_task(background_tasks.F1Results(self).start())
         self.loop.create_task(background_tasks.HackerNewsTask(self).start())

@@ -14,7 +14,7 @@ from aiohttp_requests import requests
 import config
 from background_tasks.base import CrontabDiscordTask
 from utils import f1, redis
-from utils.datetime import to_epoch, utc_now
+from utils.datetime import is_today, to_epoch, utc_now
 
 REDIS_KEY = 'f1_last_handled_session'
 
@@ -136,6 +136,82 @@ class F1RaceWeek(CrontabDiscordTask):
             timestamp = session.iso_timestamp
             lines.append(
                 f'- `{session_name:<{sessions_len}}`:   <t:{timestamp}:F>   (<t:{timestamp}:R>)'
+            )
+
+        return '\n'.join(lines)
+
+
+class F1DaySchedule(CrontabDiscordTask):
+    """
+    Task that sends a message with the schedule of the current day.
+    """
+
+    crontab = '0 7 * * * 0'
+    run_on_start = True
+
+    def __init__(self, client):
+        super().__init__(client)
+        self._channel = None
+
+    @property
+    def channel(self):
+        if not self._channel:
+            self._channel = self.client.get_channel(config.DISCORD_F1_CHANNEL_ID)
+        return self._channel
+
+    async def work(self):
+        race, sessions = await self.get_today_sessions()
+        if not sessions:
+            return
+        msg = self.build_message(race, sessions)
+        await self.channel.send(content=msg)
+
+    async def get_today_sessions(self):
+        race = await self.get_current_race()
+        if not race:
+            return None, None
+        sessions = [session for session in race.sessions if is_today(session.timestamp)]
+        return race, sessions
+
+    async def get_current_race(self) -> Optional[Race]:
+        current_week = datetime.date.today().isocalendar()[1]
+        for race in await self.load_races():
+            if race.week == current_week:
+                return race
+
+    async def load_races(self) -> list[Race]:
+        url = SCHEDULE_URL.format(utc_now().year)
+        res = await requests.session.get(url)
+        data = json.loads(await res.text())
+        races = [self.parse_race(race) for race in data['races']]
+        return races
+
+    def parse_race(self, race_dict: dict) -> Race:
+        sessions = [self.parse_session(*session) for session in race_dict['sessions'].items()]
+        return Race(
+            name=race_dict['name'],
+            sessions=sessions,
+        )
+
+    @staticmethod
+    def parse_session(session_type: str, timestamp: str) -> Session:
+        return Session(
+            type_=session_type,
+            timestamp=dateutil.parser.parse(timestamp),
+        )
+
+    @staticmethod
+    def build_message(race: Race, sessions: list[Session]) -> str:
+        lines = []
+        lines.append(f"## {race.name} GP – Today's sessions")
+
+        sessions_len = max(len(SESSIONS_MAPPING[session.type_]) for session in sessions)
+
+        for session in sessions:
+            session_name = SESSIONS_MAPPING[session.type_]
+            timestamp = session.iso_timestamp
+            lines.append(
+                f'- `{session_name:<{sessions_len}}`:   <t:{timestamp}:t>   (<t:{timestamp}:R>)'
             )
 
         return '\n'.join(lines)

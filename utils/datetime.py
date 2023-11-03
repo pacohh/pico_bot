@@ -67,3 +67,10 @@ def epoch_to_date(epoch: int) -> dt.date:
 
 def epoch_to_datetime(epoch: int) -> dt.datetime:
     return dt.datetime.fromtimestamp(epoch)
+
+
+def is_today(date: Union[dt.datetime, dt.date]) -> bool:
+    if isinstance(date, dt.datetime):
+        date = date.date()
+    today = utc_now().date()
+    return date == today
