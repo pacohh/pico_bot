@@ -93,7 +93,8 @@ class F1RaceWeek(CrontabDiscordTask):
         if not race:
             return
         msg = self.build_message(race)
-        await self.channel.send(content=msg)
+        message = await self.channel.send(content=msg)
+        await message.pin()
 
     async def get_current_race(self) -> Optional[Race]:
         current_week = datetime.date.today().isocalendar()[1]
