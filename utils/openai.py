@@ -80,18 +80,37 @@ async def moderation(text: str) -> list[str]:
     return flags
 
 
-async def create_image(prompt: str) -> BytesIO:
+async def create_images(
+        prompt: str,
+        style: str = 'vivid',
+        hd: bool = False,
+        num_images: int = 1,
+        user: Optional[str] = None
+) -> list[tuple[str, BytesIO]]:
+    data = {
+        'model': 'dall-e-3',
+        'prompt': prompt,
+        'style': style,
+        'quality': 'hd' if hd else 'standard',
+        'response_format': 'b64_json',
+        'n': num_images,
+    }
+    if user:
+        data['user'] = user
     response = await _send_request(
         '/images/generations',
         method='POST',
-        json_={'prompt': prompt, 'response_format': 'b64_json'},
+        json_=data,
     )
     data = await response.json()
-    b64_json = data['data'][0]['b64_json']
-    image = BytesIO()
-    image.write(base64.decodebytes(b64_json.encode()))
-    image.seek(0)
-    return image
+    images = []
+    for image_data in data['data']:
+        b64_json = image_data['b64_json']
+        image = BytesIO()
+        image.write(base64.decodebytes(b64_json.encode()))
+        image.seek(0)
+        images.append((image_data['revised_prompt'], image))
+    return images
 
 
 async def _send_request(endpoint, method='GET', token=None, params=None, json_=None):

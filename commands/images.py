@@ -1,16 +1,9 @@
-from __future__ import annotations
+               from __future__ import annotations
 
-import asyncio
-import io
 import logging
-import random
 import re
 
 import discord
-import httpx
-import regex
-import requests.utils as requests_utils
-from aiohttp_requests import requests
 
 from commands.base import BaseCommand
 from utils import env, openai
@@ -40,17 +33,17 @@ class GenerateImageCommand(BaseCommand):
             parts.pop(1)
 
         style = 'vivid'
-        if parts[0].lower() == 'standard':
-            style = 'standard'
+        if parts[0].lower() == 'natural':
+            style = 'natural'
             parts.pop(0)
-        if parts[1].lower() == 'standard':
-            style = 'standard'
+        if parts[1].lower() == 'natural':
+            style = 'natural'
             parts.pop(1)
 
         prompt = ' '.join(parts[1:])
 
         logger.info(
-            'Image generation. User = %s. Style = %s. HD = %b. Prompt: %s',
+            'Image generation. User = %s. Style = %s. HD = %s. Prompt: %s',
             message.author,
             style,
             hd,
@@ -66,24 +59,24 @@ class GenerateImageCommand(BaseCommand):
 
         try:
             images = await openai.create_images(prompt, style=style, hd=hd, user=message.author.name)
-        except Exception as exc:
+        except Exception:
+            logger.exception('Error creating image')
             if loading:
                 await response_channel.delete_messages([loading])
-            response = await response_channel.send(f'Error: {exc.args[0]}', reference=message)
+            response = await response_channel.send(f'Error creating images', reference=message)
             return response
 
         if loading:
             await response_channel.delete_messages([loading])
 
-        cost_per = 0.08 if hd else 0.04
-        cost = cost_per * len(images)
-
+        cost = 0.08 if hd else 0.04
+        revised_prompt, image = images[0]
         response = await response_channel.send(
-            content=f'**Prompt:** {prompt}\nStyle: {style}. HD: {hd}. Cost: ${cost}',
-            files=[discord.File(image, filename='image.png') for image in images],
+            content=f'**Prompt:** {prompt}\n'
+                    f'**Revised prompt:** {revised_prompt}\n'
+                    f'**Style:** `{style}` | **HD:** `{hd}` | **Cost:** ${cost}',
+            files=[discord.File(image, filename='image.png')],
             reference=message,
         )
-        for image in images:
-            image.close()
+        image.close()
         return response
-
