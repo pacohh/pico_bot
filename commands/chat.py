@@ -44,7 +44,6 @@ WEIRD_MESSAGES = [
     {'role': 'assistant', 'content': "10"},
 ]
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -64,16 +63,19 @@ class ChatConversation:
     def has_message(self, message_id: int) -> bool:
         return message_id in self.discord_messages
 
-    def add_user_message(self, message: discord.Message) -> None:
+    def add_user_message(self, message: discord.Message, image_urls: list[str]) -> None:
         # Get the user's prompt
         prompt = message.clean_content.strip()
         if prompt.startswith(self.bot_mention):
             # Remove the bot mention if there is one
-            prompt = prompt[len(self.bot_mention) :].strip()
+            prompt = prompt[len(self.bot_mention):].strip()
 
         prompt = f'{message.author.display_name}: {prompt}'
+        content = [{'type': 'text', 'text': prompt}]
+        for image_url in image_urls:
+            content.append({'type': 'image_url', 'image_url': image_url})
 
-        self.openai_messages.append({'role': 'user', 'content': prompt})
+        self.openai_messages.append({'role': 'user', 'content': content})
 
     def add_assistant_messages(self, messages: list[discord.Message]) -> None:
         for message in messages:
@@ -110,7 +112,7 @@ class ChatCommand(BaseCommand):
         return False
 
     async def handle(
-        self, message: discord.Message, response_channel: discord.TextChannel
+            self, message: discord.Message, response_channel: discord.TextChannel
     ) -> discord.Message:
         is_dm = isinstance(response_channel, discord.DMChannel)
         if is_dm:
@@ -118,9 +120,11 @@ class ChatCommand(BaseCommand):
         else:
             loading = await response_channel.send('<a:loading:1085904578798694410>')
 
+        image_urls = self.extract_image_attachments(message)[:5]
+
         # Get or create Conversation
         conversation = self.get_or_create_conversation(message)
-        conversation.add_user_message(message)
+        conversation.add_user_message(message, image_urls)
 
         # Get response from the API
         error_message = None
@@ -147,6 +151,14 @@ class ChatCommand(BaseCommand):
         conversation.add_assistant_messages(responses)
 
         return responses[0]
+
+    @staticmethod
+    def extract_image_attachments(message: discord.Message) -> list[str]:
+        image_urls = []
+        for attachment in message.attachments:
+            if attachment.content_type.startswith('image'):
+                image_urls.append(attachment.url)
+        return image_urls
 
     def get_or_create_conversation(self, message: discord.Message) -> ChatConversation:
         conversation = self.get_conversation(message)

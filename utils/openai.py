@@ -35,6 +35,8 @@ class ModerationFlaggedError(Exception):
 async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> str:
     # Check for content policy violations
     latest_message = messages[-1]['content']
+    if isinstance(latest_message, list):
+        latest_message = latest_message[0]['text']
     flags = await moderation(latest_message)
     if flags:
         logger.warning(
@@ -47,10 +49,11 @@ async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> st
     logger.info('Sending OpenAI chat request with messages: %s', messages)
 
     data = {
-            'model': 'gpt-4-vision-preview',
-            'messages': messages,
-            'temperature': 0.1,
-        }
+        'model': 'gpt-4-vision-preview',
+        'messages': messages,
+        'temperature': 0.1,
+        'max_tokens': 4096,
+    }
     if user:
         data['user'] = user
 
