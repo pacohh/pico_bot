@@ -69,12 +69,11 @@ class GenerateImageCommand(BaseCommand):
         if loading:
             await response_channel.delete_messages([loading])
 
-        cost = 0.08 if hd else 0.04
         revised_prompt, image = images[0]
         response = await response_channel.send(
             content=f'**Prompt:** {prompt}\n'
                     f'**Revised prompt:** {revised_prompt}\n'
-                    f'**Style:** `{style}` | **HD:** `{hd}` | **Cost:** ${cost}',
+                    f'**Style:** `{style}` | **HD:** `{hd}`',
             files=[discord.File(image, filename='image.png')],
             reference=message,
         )
