@@ -8,6 +8,8 @@ import discord
 from commands.base import BaseCommand
 from utils import env, openai
 
+BING_AUTH_COOKIE = env.require('BING_AUTH_COOKIE')
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,20 +25,20 @@ class GenerateImageCommand(BaseCommand):
             return await response_channel.send(content='Add more detail to your prompt')
 
         hd = False
+        if parts[0].lower() == 'hd':
+            hd = True
+            parts.pop(0)
         if parts[1].lower() == 'hd':
             hd = True
             parts.pop(1)
-        if parts[2].lower() == 'hd':
-            hd = True
-            parts.pop(2)
 
         style = 'vivid'
+        if parts[0].lower() == 'natural':
+            style = 'natural'
+            parts.pop(0)
         if parts[1].lower() == 'natural':
             style = 'natural'
             parts.pop(1)
-        if parts[2].lower() == 'natural':
-            style = 'natural'
-            parts.pop(2)
 
         prompt = ' '.join(parts[1:])
 
