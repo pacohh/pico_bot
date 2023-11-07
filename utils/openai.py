@@ -32,7 +32,9 @@ class ModerationFlaggedError(Exception):
     stop=stop_after_delay(60) | stop_after_attempt(5),
     retry=retry_if_not_exception_type(ModerationFlaggedError),
 )
-async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> str:
+async def chat(
+        messages: list[dict[str, str]], tools: Optional[list[dict]], user: Optional[str] = None
+) -> tuple[Optional[str], Optional[list[dict]]]:
     # Check for content policy violations
     latest_message = messages[-1]['content']
     if isinstance(latest_message, list):
@@ -56,6 +58,8 @@ async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> st
     }
     if user:
         data['user'] = user
+    if tools:
+        data['tools'] = tools
 
     response = await _send_request(
         '/chat/completions',
@@ -66,7 +70,9 @@ async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> st
 
     logger.info('Used %d tokens for request %s', rdata['usage']['total_tokens'], rdata['id'])
 
-    return rdata['choices'][0]['message']['content']
+    response = rdata['choices'][0]['message']['content']
+    tool_calls = rdata['choices'][0]['message'].get('tool_calls')
+    return response, tool_calls
 
 
 async def moderation(text: str) -> list[str]:
@@ -83,6 +89,7 @@ async def moderation(text: str) -> list[str]:
 async def create_images(
         prompt: str,
         style: str = 'vivid',
+        size: str = '1024x1024',
         hd: bool = False,
         num_images: int = 1,
         user: Optional[str] = None
@@ -92,6 +99,7 @@ async def create_images(
         'prompt': prompt,
         'style': style,
         'quality': 'hd' if hd else 'standard',
+        'size': size,
         'response_format': 'b64_json',
         'n': num_images,
     }
@@ -128,5 +136,6 @@ async def _send_request(endpoint, method='GET', token=None, params=None, json_=N
     logger.debug('Sending request %s %s | JSON: %s | Headers: %s', method, url, json_, headers)
 
     res = await requests.session.request(method, url, params=params, json=json_, headers=headers)
+    data = await res.json()
     res.raise_for_status()
     return res

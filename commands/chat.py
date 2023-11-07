@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import time
 import uuid
@@ -7,6 +8,7 @@ from typing import Union
 
 import discord
 
+from commands import chat_tools
 from commands.base import BaseCommand
 from utils.messages import send_long_message
 from utils.openai import ModerationFlaggedError
@@ -49,6 +51,10 @@ class ChatConversation:
         for message in messages:
             self.discord_messages.add(message.id)
             self.openai_messages.append({'role': 'assistant', 'content': message.clean_content})
+
+    def add_tool_messages(self, messages: list[discord.Message]) -> None:
+        for message in messages:
+            self.discord_messages.add(message.id)
 
     @property
     def bot_mention(self) -> str:
@@ -97,7 +103,11 @@ class ChatCommand(BaseCommand):
         # Get response from the API
         error_message = None
         try:
-            response_text = await openai_chat(conversation.openai_messages, user=message.author.name)
+            response_text, tool_calls = await openai_chat(
+                conversation.openai_messages,
+                tools=None,
+                user=message.author.name,
+            )
         except ModerationFlaggedError as exc:
             flags = ', '.join(exc.flags)
             error_message = f"Your message violates the following content policies: {flags}"
@@ -111,6 +121,12 @@ class ChatCommand(BaseCommand):
             response = await response_channel.send(content=error_message, reference=message)
             conversation.discord_messages.add(response.id)
             return response
+
+        # Handle tool calls
+        if tool_calls:
+            responses = await self.handle_tool_calls(message, response_channel, tool_calls)
+            conversation.add_tool_messages(responses)
+            return responses[0]
 
         # Send response
         if not is_dm:
@@ -145,3 +161,21 @@ class ChatCommand(BaseCommand):
         for conversation in self.conversations:
             if conversation.has_message(message_id):
                 return conversation
+
+    async def handle_tool_calls(
+            self,
+            message: discord.Message,
+            response_channel: discord.TextChannel,
+            tool_calls: list[dict]
+    ) -> list[discord.Message]:
+        for tool_call in tool_calls:
+            function_name = tool_call['function']['name']
+            function_args = json.loads(tool_call['function']['arguments'])
+
+            if function_name == 'generate_images':
+                images = await chat_tools.generate_images(self.client, function_args['prompts'], function_args['size'])
+                response = await response_channel.send(
+                    files=[discord.File(image, filename='image.png') for image in images],
+                    reference=message,
+                )
+                return [response]
