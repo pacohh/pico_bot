@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import logging
 from io import BytesIO
+from typing import Optional
 
 from aiohttp_requests import requests
 from tenacity import (
@@ -31,7 +32,7 @@ class ModerationFlaggedError(Exception):
     stop=stop_after_delay(60) | stop_after_attempt(5),
     retry=retry_if_not_exception_type(ModerationFlaggedError),
 )
-async def chat(messages: list[dict[str, str]]) -> str:
+async def chat(messages: list[dict[str, str]], user: Optional[str] = None) -> str:
     # Check for content policy violations
     latest_message = messages[-1]['content']
     flags = await moderation(latest_message)
@@ -45,20 +46,24 @@ async def chat(messages: list[dict[str, str]]) -> str:
 
     logger.info('Sending OpenAI chat request with messages: %s', messages)
 
+    data = {
+            'model': 'gpt-4-vision-preview',
+            'messages': messages,
+            'temperature': 0.1,
+        }
+    if user:
+        data['user'] = user
+
     response = await _send_request(
         '/chat/completions',
         method='POST',
-        json_={
-            'model': 'gpt-4',
-            'messages': messages,
-            'temperature': 0.1,
-        },
+        json_=data,
     )
-    data = await response.json()
+    rdata = await response.json()
 
-    logger.info('Used %d tokens for request %s', data['usage']['total_tokens'], data['id'])
+    logger.info('Used %d tokens for request %s', rdata['usage']['total_tokens'], rdata['id'])
 
-    return data['choices'][0]['message']['content']
+    return rdata['choices'][0]['message']['content']
 
 
 async def moderation(text: str) -> list[str]:

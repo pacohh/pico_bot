@@ -125,7 +125,7 @@ class ChatCommand(BaseCommand):
         # Get response from the API
         error_message = None
         try:
-            response_text = await openai_chat(conversation.openai_messages)
+            response_text = await openai_chat(conversation.openai_messages, user=message.author.name)
         except ModerationFlaggedError as exc:
             flags = ', '.join(exc.flags)
             error_message = f"Your message violates the following content policies: {flags}"
