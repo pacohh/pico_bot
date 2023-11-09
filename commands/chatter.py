@@ -50,7 +50,7 @@ class ChatterCommand(BaseCommand):
         self.redis = utils.redis.get_client()
 
     async def handle(self, message: discord.Message, response_channel: discord.TextChannel) -> None:
-        content = f'{message.author.display_name}: {message.content}'
+        content = f'{message.author.display_name}: {message.clean_content}'
         await self.chatter.add_message(content)
 
         logger.info('Message added: %s', content)
