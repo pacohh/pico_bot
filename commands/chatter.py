@@ -12,9 +12,20 @@ import config
 from commands.base import BaseCommand
 from helpers.chatter import Chatter
 import utils.redis
+from utils import emojis
 
 REDIS_TRIGGER_FREQ_KEY = 'chatter_trigger_frequency'
 DEFAULT_TRIGGER_FREQ = 50
+
+AVAILABLE_EMOTES = {
+    ':lul:': emojis.LUL,
+    ':couchStare:': emojis.COUCH_STARE,
+    ':huh:': emojis.HUH,
+    ':hmmmmcat:': emojis.HMMMMCAT,
+    ':happymonke:': emojis.HAPPY_MONKE,
+    ':kekSalute:': emojis.KEK_SALUTE,
+}
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +81,10 @@ class ChatterCommand(BaseCommand):
         response_channel: discord.TextChannel,
         message_content: MessageContentText,
     ) -> None:
-        await response_channel.send(message_content.text.value)
+        text = message_content.text.value
+        for emote_string, emote in AVAILABLE_EMOTES.items():
+            text = text.replace(emote_string, emote)
+        await response_channel.send(text)
 
 
 class ChatterFrequencyCommand(BaseCommand):
