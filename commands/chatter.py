@@ -62,9 +62,6 @@ class ChatterCommand(BaseCommand):
             logger.info('Chatter run triggered')
             await response_channel.typing()
             await self.run_chatter(response_channel)
-            chatter_messages = await self.chatter.run()
-            for chatter_message in chatter_messages:
-                await response_channel.send(chatter_message.conte)
 
     async def run_chatter(self, response_channel: discord.TextChannel) -> None:
         chatter_messages = await self.chatter.run()
