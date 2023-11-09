@@ -27,6 +27,7 @@ class BaseCommand:
     channels = None
     roles = None
     response_ttl = None
+    allowed_users = []
     ignored_users = []
 
     def __init__(self, client):
@@ -57,6 +58,10 @@ class BaseCommand:
         member = self.get_message_member(message)
         is_correct_role = roles.has_any_roles(member, self.roles) if self.roles else True
         if not is_correct_role:
+            return False
+
+        # Don't handle messages from non-allowed users
+        if self.allowed_users and message.author.id not in self.allowed_users:
             return False
 
         return True
