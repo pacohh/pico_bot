@@ -5,6 +5,7 @@ import logging
 from io import BytesIO
 from typing import Optional
 
+import openai
 from aiohttp_requests import requests
 from tenacity import (
     retry,
@@ -19,6 +20,7 @@ from utils import env
 BASE_URL = 'https://api.openai.com/v1'
 
 logger = logging.getLogger(__name__)
+client = openai.AsyncClient()
 
 
 class ModerationFlaggedError(Exception):
@@ -33,7 +35,7 @@ class ModerationFlaggedError(Exception):
     retry=retry_if_not_exception_type(ModerationFlaggedError),
 )
 async def chat(
-        messages: list[dict[str, str]], tools: Optional[list[dict]], user: Optional[str] = None
+    messages: list[dict[str, str]], tools: Optional[list[dict]], user: Optional[str] = None
 ) -> tuple[Optional[str], Optional[list[dict]]]:
     # Check for content policy violations
     latest_message = messages[-1]['content']
@@ -87,12 +89,12 @@ async def moderation(text: str) -> list[str]:
 
 
 async def create_images(
-        prompt: str,
-        style: str = 'vivid',
-        size: str = '1024x1024',
-        hd: bool = False,
-        num_images: int = 1,
-        user: Optional[str] = None
+    prompt: str,
+    style: str = 'vivid',
+    size: str = '1024x1024',
+    hd: bool = False,
+    num_images: int = 1,
+    user: Optional[str] = None,
 ) -> list[tuple[str, BytesIO]]:
     data = {
         'model': 'dall-e-3',
@@ -139,3 +141,26 @@ async def _send_request(endpoint, method='GET', token=None, params=None, json_=N
     data = await res.json()
     res.raise_for_status()
     return res
+
+
+async def describe_image(image_url: str) -> str:
+    logger.info('Describing image %s', image_url)
+    response = await client.chat.completions.create(
+        model='gpt-4-vision-preview',
+        messages=[
+            {
+                'role': 'user',
+                'content': [
+                    {'type': 'text', 'text': 'Describe this image'},
+                    {
+                        'type': 'image_url',
+                        'image_url': {
+                            'url': image_url,
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+    return response.choices[0].message.content

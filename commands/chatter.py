@@ -7,15 +7,21 @@ import re
 import discord
 from aioredis import Redis
 from openai.types.beta.threads import MessageContentText, MessageContentImageFile
+from aiohttp_requests import requests
 
 import config
 from commands.base import BaseCommand
 from helpers.chatter import Chatter
 import utils.redis
+import utils.urls
 from utils import emojis
+from utils.openai import describe_image
 
 REDIS_TRIGGER_FREQ_KEY = 'chatter_trigger_frequency'
 DEFAULT_TRIGGER_FREQ = 50
+
+IMAGE_CONTENT_TYPES = {'image/png', 'image/jpeg', 'image/gif', 'image/webp'}
+IMAGE_MAX_SIZE = 20 * 1024 * 1024  # 20 MB
 
 AVAILABLE_EMOTES = {
     ':lul:': emojis.LUL,
@@ -50,8 +56,9 @@ class ChatterCommand(BaseCommand):
         self.redis = utils.redis.get_client()
 
     async def handle(self, message: discord.Message, response_channel: discord.TextChannel) -> None:
-        content = f'{message.author.display_name}: {message.clean_content}'
-        await self.chatter.add_message(content)
+        contents = await self.parse_user_message(message)
+        for content in contents:
+            await self.chatter.add_message(content)
 
         logger.info('Message added: %s', content)
 
@@ -62,6 +69,79 @@ class ChatterCommand(BaseCommand):
             logger.info('Chatter run triggered')
             await response_channel.typing()
             await self.run_chatter(response_channel)
+
+    async def parse_user_message(self, message: discord.Message) -> list[str]:
+        contents = []
+
+        content = await self.replace_image_urls(message.clean_content)
+        contents.append(content)
+
+        attachment_descriptions = await self.describe_attachments(message.attachments)
+        contents.extend(attachment_descriptions)
+
+        for idx, content in enumerate(contents):
+            contents[idx] = f'{message.author.nick}: {content}'
+
+        return contents
+
+    @staticmethod
+    async def replace_image_urls(text: str) -> str:
+        # Find URLs in the text
+        urls = utils.urls.extract_urls(text)
+
+        # Expand tenor URLs
+        for idx, url in enumerate(urls):
+            if utils.urls.is_tenor_url(url):
+                new_url = f'{url}.gif'
+                urls[idx] = new_url
+                text = text.replace(url, new_url)
+
+        # Check which URLs are for valid images
+        image_urls = []
+        for url in urls:
+            response = await requests.session.head(url, allow_redirects=True)
+            if (
+                response.content_type in IMAGE_CONTENT_TYPES
+                and response.content_length <= IMAGE_MAX_SIZE
+            ):
+                final_url = response.url.human_repr()
+                if final_url != url:
+                    text = text.replace(url, final_url)
+                image_urls.append(final_url)
+
+        # Replace image URLs by image descriptions
+        for url in image_urls:
+            try:
+                description = await describe_image(url)
+                description = description.replace('"', r'\"')
+                image = f'{{"type": "image", "description": "{description}"}}'
+                text = text.replace(url, image)
+            except:
+                pass
+
+        return text
+
+    @staticmethod
+    async def describe_attachments(attachments: list[discord.Attachment]) -> list[str]:
+        image_urls = []
+        for attachment in attachments:
+            if attachment.content_type not in IMAGE_CONTENT_TYPES:
+                continue
+            if attachment.size > IMAGE_MAX_SIZE:
+                continue
+            image_urls.append(attachment.url)
+
+        descriptions = []
+        for url in image_urls:
+            try:
+                description = await describe_image(url)
+                description = description.replace('"', r'\"')
+                image = f'{{"type": "image", "description": "{description}"}}'
+                descriptions.append(image)
+            except:
+                pass
+
+        return descriptions
 
     async def run_chatter(self, response_channel: discord.TextChannel) -> None:
         chatter_messages = await self.chatter.run()
