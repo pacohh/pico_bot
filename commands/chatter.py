@@ -79,8 +79,9 @@ class ChatterCommand(BaseCommand):
         attachment_descriptions = await self.describe_attachments(message.attachments)
         contents.extend(attachment_descriptions)
 
+        user = message.author.nick or message.author.display_name
         for idx, content in enumerate(contents):
-            contents[idx] = f'{message.author.nick}: {content}'
+            contents[idx] = f'{user}: {content}'
 
         return contents
 
