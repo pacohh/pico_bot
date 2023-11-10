@@ -115,7 +115,7 @@ class ChatterCommand(BaseCommand):
             try:
                 description = await describe_image(url)
                 description = description.replace('"', r'\"')
-                image = f'{{"type": "image", "description": "{description}"}}'
+                image = f'{{"type": "image", "url": "{url}", "description": "{description}"}}'
                 text = text.replace(url, image)
             except:
                 pass
@@ -137,7 +137,7 @@ class ChatterCommand(BaseCommand):
             try:
                 description = await describe_image(url)
                 description = description.replace('"', r'\"')
-                image = f'{{"type": "image", "description": "{description}"}}'
+                image = f'{{"type": "image", "url": "{url}", "description": "{description}"}}'
                 descriptions.append(image)
             except:
                 pass
