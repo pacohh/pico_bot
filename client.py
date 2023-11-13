@@ -18,11 +18,6 @@ REACTION_HANDLERS = []
 class Client(discord.Client):
     def __init__(self, *, intents: Intents, **options: Any) -> None:
         super().__init__(intents=intents, **options)
-        self.chatter = Chatter(
-            openai.AsyncClient(),
-            config.CHATTER_ASSISTANT_ID,
-            config.CHATTER_THREAD_ID,
-        )
 
     async def setup_hook(self) -> None:
         await super().setup_hook()
@@ -39,9 +34,6 @@ class Client(discord.Client):
         self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
         self.register_command(commands.TtsCommand)
-        self.register_command(commands.ChatterFrequencyCommand)
-        # ChatterCommand needs to be the last on the list as it catches all messages in #lounge
-        self.register_command(commands.ChatterCommand)
 
     def register_command(self, command_class):
         """Register a command class."""
