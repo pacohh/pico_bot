@@ -9,8 +9,10 @@ import config
 from background_tasks.base import CrontabDiscordTask
 from utils import redis, yts_api
 from utils.datetime import utc_now
+from utils.imdb import get_movie_details
 
 REDIS_KEY = 'rarbg_handled_movies'
+MIN_IMDB_VOTES = 15000
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,7 @@ class YtsNewMoviesTask(CrontabDiscordTask):
     async def get_new_movies(self) -> list[dict]:
         movies = await self.get_movies()
         new_movies = await self.filter_seen_ids(movies)
+        new_movies = await self.filter_low_ratings(new_movies)
         return new_movies
 
     @staticmethod
@@ -53,7 +56,7 @@ class YtsNewMoviesTask(CrontabDiscordTask):
         movies = []
         movies_this_year = await yts_api.list_all_movies(str(year))
         movies_prev_year = await yts_api.list_all_movies(str(year - 1))
-        for movie in itertools.chain(movies_this_year, movies_prev_year):
+        for movie in itertools.chain(movies_this_year[:100], movies_prev_year[:100]):
             torrents = {torrent['quality']: torrent for torrent in movie['torrents'] if torrent}
             if '2160p' not in torrents:
                 logger.error("Movie does't have 2160 torrent. Movie: %s", movie)
@@ -75,13 +78,6 @@ class YtsNewMoviesTask(CrontabDiscordTask):
                 }
             )
 
-        # Sort by total number of seeds
-        movies.sort(key=lambda movie_: movie_['total_seeds'], reverse=True)
-        # Filter out movies with an IMDB rating of less than 6.0
-        movies = [movie for movie in movies if movie['rating'] >= 6.0]
-        # Only return the top N movies
-        movies = movies[:30]
-
         return movies
 
     async def filter_seen_ids(self, movies: list[dict]) -> list[dict]:
@@ -91,6 +87,19 @@ class YtsNewMoviesTask(CrontabDiscordTask):
             if not await self.redis.sismember(REDIS_KEY, movie_id):
                 new_movies.append(movie)
         return new_movies
+
+    @staticmethod
+    async def filter_low_ratings(all_movies: list[dict]) -> list[dict]:
+        movies = []
+        for movie in all_movies:
+            movie_id = movie['imdb_id']
+            try:
+                data = await get_movie_details(movie_id)
+                if data.get('votes', 0) >= MIN_IMDB_VOTES:
+                    movies.append(movie)
+            except:
+                logger.exception('Error getting movie %s details', movie_id)
+        return movies
 
     async def handle_new_movie(self, movie: dict) -> None:
         imdb_id = movie['imdb_id']

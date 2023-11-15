@@ -14,7 +14,9 @@ async def list_all_movies(query: str, quality: str = '2160p') -> list[dict]:
     params = {
         'limit': 50,
         'quality': quality,
+        'minimum_rating': 6,
         'query_term': query,
+        'sort_by': 'like_count',
         'page': 1,
     }
     while True:
