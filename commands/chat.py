@@ -38,9 +38,8 @@ class ChatConversation:
         prompt = message.clean_content.strip()
         if prompt.startswith(self.bot_mention):
             # Remove the bot mention if there is one
-            prompt = prompt[len(self.bot_mention):].strip()
+            prompt = prompt[len(self.bot_mention) :].strip()
 
-        prompt = f'{message.author.display_name}: {prompt}'
         content = [{'type': 'text', 'text': prompt}]
         for image_url in image_urls:
             content.append({'type': 'image_url', 'image_url': image_url})
@@ -86,7 +85,7 @@ class ChatCommand(BaseCommand):
         return False
 
     async def handle(
-            self, message: discord.Message, response_channel: discord.TextChannel
+        self, message: discord.Message, response_channel: discord.TextChannel
     ) -> discord.Message:
         is_dm = isinstance(response_channel, discord.DMChannel)
         if is_dm:
@@ -163,17 +162,19 @@ class ChatCommand(BaseCommand):
                 return conversation
 
     async def handle_tool_calls(
-            self,
-            message: discord.Message,
-            response_channel: discord.TextChannel,
-            tool_calls: list[dict]
+        self,
+        message: discord.Message,
+        response_channel: discord.TextChannel,
+        tool_calls: list[dict],
     ) -> list[discord.Message]:
         for tool_call in tool_calls:
             function_name = tool_call['function']['name']
             function_args = json.loads(tool_call['function']['arguments'])
 
             if function_name == 'generate_images':
-                images = await chat_tools.generate_images(self.client, function_args['prompts'], function_args['size'])
+                images = await chat_tools.generate_images(
+                    self.client, function_args['prompts'], function_args['size']
+                )
                 response = await response_channel.send(
                     files=[discord.File(image, filename='image.png') for image in images],
                     reference=message,
