@@ -69,7 +69,6 @@ async def get_player_server(player_id: str, token: str) -> Optional[dict]:
             'players': server_attrs['players'] if server else None,
             'max_players': server_attrs['maxPlayers'] if server else None,
             'layer': server_details['map'] if server else None,
-            'play_time': server_details['squad_playTime'] // 60 if server else None,
             'queue': (
                 server_details['squad_publicQueue'] + server_details['squad_reservedQueue']
                 if server

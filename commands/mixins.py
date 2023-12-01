@@ -12,8 +12,6 @@ class DeletePreviousMixin:
     After handling a message, delete all previous responses to the command.
     """
 
-    previous_responses = defaultdict(set)
-
     async def post_handle(self, message, response_channel, response):
         if not response:
             return

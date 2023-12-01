@@ -73,9 +73,9 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
         # if is_empty and not was_empty:
         #     await commands.WhoCommand(self.client).delete_degen_messages()
 
-    @staticmethod
-    async def update_who_messages() -> None:
-        await commands.WhoCommand.update_messages()
+    async def update_who_messages(self) -> None:
+        await self.client.squad_who_command.update_messages()
+        await self.client.ps_who_command.update_messages()
 
     async def update_bot_presence(self) -> None:
         # Count how many pepegas are playing

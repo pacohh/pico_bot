@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from unittest.mock import MagicMock
+
+import discord
 
 import config
 from background_tasks import bm_players
@@ -14,11 +17,15 @@ logger = logging.getLogger(__name__)
 
 class WhoCommand(DeletePreviousMixin, BaseCommand):
     command = '!who'
-    channels = {config.DISCORD_SQUAD_CHANNEL_ID}
     allow_pm = False
 
-    previous_message = None
-    degen_messages = set()
+    def __init__(self, client: discord.Client, game: str, channel: str):
+        super().__init__(client)
+        self.game = game
+        self.channels = {channel}
+        self.previous_message = None
+        self.previous_responses = defaultdict(set)
+        self.degen_messages = set()
 
     async def handle(self, message, response_channel):
         response_message = self.build_message()
@@ -29,18 +36,17 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         await self.delete_degen_messages()
         return await super().post_handle(message, response_channel, response)
 
-    @classmethod
-    async def update_messages(cls):
-        message = cls.build_message()
+    async def update_messages(self):
+        message = self.build_message()
 
         # Don't update if message hasn't changed
-        if message == cls.previous_message:
+        if message == self.previous_message:
             return
 
-        cls.previous_message = message
+        self.previous_message = message
 
         # Update messages
-        for responses in cls.previous_responses.values():
+        for responses in self.previous_responses.values():
             for response in responses:
                 await response.edit(content=message)
 
@@ -56,9 +62,8 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         await self.delete_channel_responses(self.squad_channel, self.degen_messages)
         self.degen_messages.clear()
 
-    @classmethod
-    def build_message(cls):
-        return WhoMessageBuilder.build() or 'No pepegas around'
+    def build_message(self):
+        return WhoMessageBuilder.build(self.game) or 'No pepegas around'
 
     @property
     def squad_channel(self):
@@ -67,8 +72,12 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
 
 class WhoMessageBuilder:
     @classmethod
-    def build(cls) -> str:
-        return '\n'.join(cls._build_server(server) for server in bm_players.servers_data)
+    def build(cls, game: str) -> str:
+        return '\n'.join(
+            cls._build_server(server)
+            for server in bm_players.servers_data
+            if server['game'] == game
+        )
 
     @classmethod
     def _build_server(cls, server: dict) -> str:
@@ -81,14 +90,20 @@ class WhoMessageBuilder:
         next_f2 = next_layer_data['team2']['faction'] if next_layer_data else ''
         next_v1 = next_layer_data['team1']['vehicles'] if next_layer_data else ''
         next_v2 = next_layer_data['team2']['vehicles'] if next_layer_data else ''
-        return (
-            f"{emote}   **{server['name']}**\n"
+        server_name = server['name'].replace('discord.gg/', r'discord.gg\/')
+        message = (
+            f"{emote}   **{server_name}**\n"
             f"```yaml\n"
             f"Pepegas: {', '.join(server['pepegas'])}\n"
-            f"Layer:   {prettify_layer_name(server['layer'])}\n"
-            f"Next:    {prettify_layer_name(server['next_layer']) or '–'}\n"
-            f"         > {next_f1}: {', '.join(next_v1) if next_v1 else '–'}\n"
-            f"         > {next_f2}: {', '.join(next_v2) if next_v2 else '–'}\n"
-            f"{players}"
-            f"```"
+            f"Layer:   {prettify_layer_name(server['layer'])}"
         )
+        if server['next_layer']:
+            message += f"\nNext:    {prettify_layer_name(server['next_layer']) or '–'}"
+        if next_f1:
+            message += (
+                "\n"
+                f"         > {next_f1}: {', '.join(next_v1) if next_v1 else '–'}\n"
+                f"         > {next_f2}: {', '.join(next_v2) if next_v2 else '–'}\n"
+            )
+        message += f"\n{players}\n```"
+        return message

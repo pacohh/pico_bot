@@ -9,6 +9,7 @@ from discord import Intents
 import background_tasks
 import commands
 import config
+from commands.base import BaseCommand
 from helpers.chatter import Chatter
 
 COMMANDS = []
@@ -18,6 +19,8 @@ REACTION_HANDLERS = []
 class Client(discord.Client):
     def __init__(self, *, intents: Intents, **options: Any) -> None:
         super().__init__(intents=intents, **options)
+        self.squad_who_command = None
+        self.ps_who_command = None
 
     async def setup_hook(self) -> None:
         await super().setup_hook()
@@ -29,16 +32,25 @@ class Client(discord.Client):
         """Register all available commands."""
         self.register_command(commands.ChatCommand)
         self.register_command(commands.GenerateImageCommand)
-        self.register_command(commands.WhoCommand)
+        squad_who_command = self.register_command(
+            commands.WhoCommand, 'squad', config.DISCORD_SQUAD_CHANNEL_ID
+        )
+        ps_who_command = self.register_command(
+            commands.WhoCommand, 'postscriptum', config.DISCORD_POSTSCRIPTUM_CHANNEL_ID
+        )
         self.register_command(commands.F1CreateEventsCommand)
         self.register_command(commands.CreateEvents)
         self.register_command(commands.DeleteEvents)
         self.register_command(commands.TtsCommand)
 
-    def register_command(self, command_class):
+        self.squad_who_command = squad_who_command
+        self.ps_who_command = ps_who_command
+
+    def register_command(self, command_class, *args, **kwargs) -> BaseCommand:
         """Register a command class."""
-        command = command_class(self)
+        command = command_class(self, *args, **kwargs)
         COMMANDS.append(command)
+        return command
 
     def register_reaction_handlers(self):
         """Register all available reaction handlers."""
