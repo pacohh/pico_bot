@@ -34,9 +34,9 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
     @staticmethod
     async def update_players_data() -> None:
+        players = await battlemetrics.get_server_players('2272069', config.BM_TOKEN)
         for player_id, player_name in config.BM_PLAYERS.items():
-            data = await battlemetrics.get_player_server(player_id, config.BM_TOKEN)
-            players_data[player_name] = data
+            players_data[player_name] = players.get(player_id)
 
     async def update_server_data(self) -> None:
         servers = {}
@@ -58,8 +58,6 @@ class BattlemetricsPlayersTask(CrontabDiscordTask):
 
         for server in servers.values():
             server['pepegas'].sort(key=lambda name: name.lower())
-            rules = await a2s.arules((server['ip'], server['port_query']))
-            server['next_layer'] = rules.get('NextLayer_s')
             server['next_layer_data'] = squad.layers_data.get(server['next_layer'])
 
         global servers_data

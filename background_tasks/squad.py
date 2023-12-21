@@ -22,6 +22,7 @@ FACTION_LOOKUP = {
     'United States Marine Corps': 'USMC',
     'Insurgent Forces': 'INS',
     'Middle Eastern Alliance': 'MEA',
+    'Turkish Land Forces': 'TLF',
 }
 VEHICLES_LOOKUP = {
     # MBTs
@@ -32,6 +33,7 @@ VEHICLES_LOOKUP = {
     'T-62' 'T-72B3': 'MBT',
     'T-72S': 'MBT',
     'ZTZ99A': 'MBT',
+    'M60T': 'MBT',
     # IFVs
     'ASLAV': 'LAV',
     'BMD-1M IFV': 'BMD-1M',
@@ -53,6 +55,8 @@ VEHICLES_LOOKUP = {
     'ZBL08 HJ73C': 'ZBL',
     'ZBL08 IFV': 'ZBL',
     'ZBL08': 'ZBL',
+    'PARS III 25mm': 'PARS 25mm',
+    'ACV-15 25mm': 'ACV 25mm',
     # APCs
     'AAVP-7A1': 'AAVP',
     'BTR-80': 'BTR-80',
@@ -74,6 +78,11 @@ VEHICLES_LOOKUP = {
     'ZSD05': 'ZSD05',
     'ZSL10 APC': 'ZSL10',
     'ZSL10': 'ZSL10',
+    'PARS III M2 RWS': 'PARS M2',
+    'PARS III MG3 RWS': 'PARS MG3',
+    'PARS III Mk19 RWS': 'PARS Mk19',
+    'ACV-15 M2': 'ACV M2',
+    'ACV-15 MG3': 'ACV MG3',
     # AAs
     'BMP-1 ZU-23-2': 'BMP-1 ZU',
     'BTR-ZD Anti-Air': 'BTR-ZD ZU',
@@ -100,6 +109,8 @@ VEHICLES_LOOKUP = {
     'M-ATV CROWS M240': 'CROW M240',
     'PMV RWS M2': 'RWS',
     'Tigr-M RWS Kord': 'RWS',
+    'Cobra II MG3 RWS': 'RWS MG3',
+    'Cobra II M2 RWS': 'RWS',
 }
 
 
