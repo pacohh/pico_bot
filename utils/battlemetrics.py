@@ -25,6 +25,61 @@ logger = logging.getLogger(__name__)
 
 
 @cached(ttl=10)
+async def get_server_players(server_id: str, token: str):
+    data = await get_server_info(server_id, token)
+    server = data['data']
+    server_attrs = server['attributes'] if server else None
+    server_details = server_attrs['details'] if server else None
+    players = {}
+    for player_data in data['included']:
+        player_id = player_data['id']
+        if player_id not in config.BM_PLAYERS:
+            continue
+        players[player_id] = {
+            'player': {
+                'id': player_id,
+                'name': player_data['attributes']['name'],
+            },
+            'server': {
+                'id': server['id'] if server else None,
+                'name': server['attributes']['name'] if server else None,
+                'ip': server_attrs['ip'] if server else None,
+                'port': server_attrs['port'] if server else None,
+                'port_query': server_attrs['portQuery'] if server else None,
+                'country': server_attrs['country'].lower() if server else None,
+                'emote': config.BM_SERVER_EMOTES.get(server['id']) if server else None,
+                'game': server['relationships']['game']['data']['id'] if server else None,
+                'players': server_attrs['players'] if server else None,
+                'max_players': server_attrs['maxPlayers'] if server else None,
+                'layer': server_details['map'] if server else None,
+                'next_layer': server_details['squad_nextLayer'] if server else None,
+                'queue': (
+                    server_details['squad_publicQueue'] + server_details['squad_reservedQueue']
+                    if server
+                    else None
+                ),
+            },
+        }
+    return players
+
+
+@cached(ttl=10)
+async def get_server_info(server_id: str, token: str):
+    logger.debug('Get server %s info', server_id)
+    endpoint = f'/servers/{server_id}'
+    params = {
+        'include': 'player',
+    }
+    try:
+        res = await _send_request(endpoint, token=token, params=params)
+    except ClientResponseError:
+        logger.error('Error getting server %s info', server_id)
+        return None
+    data = await res.json()
+    return data
+
+
+@cached(ttl=10)
 async def get_player_server(player_id: str, token: str) -> Optional[dict]:
     logger.debug('Get current server for player %s', player_id)
     endpoint = f'/players/{player_id}'
