@@ -52,7 +52,7 @@ async def get_server_players(server_id: str, token: str):
                 'players': server_attrs['players'] if server else None,
                 'max_players': server_attrs['maxPlayers'] if server else None,
                 'layer': server_details['map'] if server else None,
-                'next_layer': server_details['squad_nextLayer'] if server else None,
+                'next_layer': server_details.get('squad_nextLayer') if server else None,
                 'queue': (
                     server_details['squad_publicQueue'] + server_details['squad_reservedQueue']
                     if server

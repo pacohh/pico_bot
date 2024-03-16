@@ -151,7 +151,7 @@ class SquadLayersTask(CrontabDiscordTask):
 
     @staticmethod
     def _parse_team(team_data: dict) -> dict:
-        faction = FACTION_LOOKUP[team_data['faction']]
+        faction = team_data['faction']
         vehicles = {
             VEHICLES_LOOKUP[vic['type']]
             for vic in team_data.get('vehicles', [])
