@@ -99,11 +99,6 @@ class WhoMessageBuilder:
         )
         if server['next_layer']:
             message += f"\nNext:    {prettify_layer_name(server['next_layer']) or '–'}"
-        if next_f1:
-            message += (
-                "\n"
-                f"         > {next_f1}: {', '.join(next_v1) if next_v1 else '–'}\n"
-                f"         > {next_f2}: {', '.join(next_v2) if next_v2 else '–'}\n"
-            )
+
         message += f"\n{players}\n```"
         return message
