@@ -41,7 +41,10 @@ TEAM_EMOTES = {
     'Mercedes': '<:a:1152607280827727902>',
     'Red Bull Racing': '<:a:1152607379158999060>',
     'Williams': '<:a:1152607527930953909>',
+    'Kick Sauber': '<:a:1226544063998857216>',
+    'RB': '<:a:1226547066881183764>',
 }
+BLANK_TEAM_EMOTE = '<:a:1127684877811195975>'
 
 logger = logging.getLogger(__name__)
 
@@ -283,7 +286,7 @@ class F1Results(CrontabDiscordTask):
         return '\n'.join(lines)
 
     def format_race_result(self, pos, line) -> str:
-        emote = TEAM_EMOTES.get(line.TeamName)
+        emote = TEAM_EMOTES.get(line.TeamName, BLANK_TEAM_EMOTE)
         pos_change = self.format_position_change(line)
         time = self.format_time(pos, line.Time)
         return (
