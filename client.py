@@ -68,6 +68,5 @@ class Client(discord.Client):
         self.loop.create_task(background_tasks.F1DaySchedule(self).start())
         self.loop.create_task(background_tasks.F1RaceWeek(self).start())
         self.loop.create_task(background_tasks.F1Results(self).start())
-        self.loop.create_task(background_tasks.HackerNewsTask(self).start())
         self.loop.create_task(background_tasks.SquadLayersTask(self).start())
         self.loop.create_task(background_tasks.YtsNewMoviesTask(self).start())
