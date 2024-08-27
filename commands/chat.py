@@ -46,7 +46,7 @@ class ChatConversation:
 
         self.openai_messages.append({'role': 'user', 'content': content})
 
-    def add_assistant_messages(self, messages: list[discord.Message]) -> None::
+    def add_assistant_messages(self, messages: list[discord.Message]) -> None:
         for message in messages:
             self.discord_messages.add(message.id)
             self.openai_messages.append({'role': 'assistant', 'content': message.clean_content})
