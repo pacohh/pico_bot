@@ -53,7 +53,7 @@ async def chat(
     logger.info('Sending OpenAI chat request with messages: %s', messages)
 
     data = {
-        'model': 'gpt-4-vision-preview',
+        'model': 'gpt-4o',
         'messages': messages,
         'temperature': 0.1,
         'max_tokens': 4096,

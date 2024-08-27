@@ -42,11 +42,11 @@ class ChatConversation:
 
         content = [{'type': 'text', 'text': prompt}]
         for image_url in image_urls:
-            content.append({'type': 'image_url', 'image_url': image_url})
+            content.append({'type': 'image_url', 'image_url': {'url': image_url}})
 
         self.openai_messages.append({'role': 'user', 'content': content})
 
-    def add_assistant_messages(self, messages: list[discord.Message]) -> None:
+    def add_assistant_messages(self, messages: list[discord.Message]) -> None::
         for message in messages:
             self.discord_messages.add(message.id)
             self.openai_messages.append({'role': 'assistant', 'content': message.clean_content})
