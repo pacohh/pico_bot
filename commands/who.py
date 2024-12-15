@@ -27,6 +27,10 @@ class WhoCommand(DeletePreviousMixin, BaseCommand):
         self.previous_responses = defaultdict(set)
         self.degen_messages = set()
 
+    async def should_handle(self, message):
+        # Disable the command while we don't have a BM API key
+        return False
+
     async def handle(self, message, response_channel):
         response_message = self.build_message()
         self.previous_message = response_message
