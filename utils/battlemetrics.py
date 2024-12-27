@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from typing import Optional
@@ -66,16 +67,18 @@ async def get_server_players(server_id: str, token: str):
 @cached(ttl=10)
 async def get_server_info(server_id: str, token: str):
     logger.debug('Get server %s info', server_id)
-    endpoint = f'/servers/{server_id}'
-    params = {
-        'include': 'player',
-    }
     try:
-        res = await _send_request(endpoint, token=token, params=params)
+        res = await requests.session.request(
+            'GET',
+            'https://tarmo-player-api-access.bloodboundbb.workers.dev',
+            headers={'Authorization': token},
+        )
+        res.raise_for_status()
     except ClientResponseError:
         logger.error('Error getting server %s info', server_id)
         return None
-    data = await res.json()
+    data = await res.text()
+    data = json.loads(data)
     return data
 
 
