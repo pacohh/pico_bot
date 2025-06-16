@@ -11,6 +11,7 @@ from markdownify import markdownify as md
 import config
 from background_tasks.base import CrontabDiscordTask
 from utils import redis
+from utils.images import upload_image
 
 APOD_URL = 'https://apod.nasa.gov/apod/'
 MD_LINK_RE = re.compile(r'\]\(([^) ]+)\)')
@@ -50,6 +51,8 @@ class AstronomyPictureOfTheDayTask(CrontabDiscordTask):
         soup = BeautifulSoup(html, features='lxml')
 
         img_src = f"{APOD_URL}{soup.find('img').parent['href']}"
+        img_src = await upload_image(img_src)
+
         date = soup.select('center:nth-of-type(1) > p:nth-of-type(2)')[0].text.strip()
         title = soup.select('center:nth-of-type(2) > b:nth-of-type(1)')[0].text.strip()
 
